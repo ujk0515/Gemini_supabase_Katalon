@@ -5,8 +5,8 @@
 
 class SmartMappingEngine {
     constructor() {
-        this.apiKey = 'AIzaSyBBkeC-0RArCSDVYzxZCrk9xvLjxq-Fu3s';
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+        this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
+        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-exp-03-25:generateContent';
         this.analysisResults = {};
         this.currentStep = 0;
     }
