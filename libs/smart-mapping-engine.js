@@ -6,7 +6,7 @@
 class SmartMappingEngine {
     constructor() {
         this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent';
         this.analysisResults = {};
         this.currentStep = 0;
     }
@@ -534,3 +534,4 @@ function downloadSmartScript() {
 }
 
 console.log('✅ 스마트 매핑 엔진 로드 완료');
+
