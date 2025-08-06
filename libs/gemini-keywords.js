@@ -5,9 +5,9 @@
 
 class GeminiKeywordExtractor {
     constructor() {
-        this.apiKey = 'AIzaSyBBkeC-0RArCSDVYzxZCrk9xvLjxq-Fu3s';
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-        console.log('🤖 Gemini 키워드 추출기 생성됨 - Model: gemini-1.5-flash');
+        this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
+        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent';
+        console.log('🤖 Gemini 키워드 추출기 생성됨 - Model: gemma-3-27b-it');
     }
 
     /**
@@ -175,4 +175,5 @@ setTimeout(async () => {
             console.warn('⚠️ Gemini API 키가 유효하지 않습니다');
         }
     }
+
 }, 500);
