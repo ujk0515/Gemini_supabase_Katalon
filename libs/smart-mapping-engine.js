@@ -541,6 +541,11 @@
  * libs/smart-mapping-engine.js
  */
 
+/**
+ * 스마트 매핑 엔진 - 3단계 분석 버전
+ * libs/smart-mapping-engine.js
+ */
+
 class SmartMappingEngine {
     constructor() {
         this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
@@ -598,6 +603,11 @@ Expected Result: "${parsedTC.expectedResult}"
 4. 각 예외상황별 대응 방안 수립
 5. Object Repository 경로 구조 설계
 
+** 중요 제약사항 **
+- Precondition의 각 항목을 최소 3개 이상 세부 액션으로 분해 필수
+- 모든 사전 조건은 순차적 단계로 명확히 구분
+- 각 액션에는 완료 확인 대기 로직 포함
+
 다음 형식의 JSON만 반환하세요:
 {
   "testPurpose": "테스트의 핵심 목적 (한 문장)",
@@ -605,24 +615,26 @@ Expected Result: "${parsedTC.expectedResult}"
   "environmentSetup": [
     {
       "action": "WebUI.navigateToUrl",
-      "target": "구체적인 URL 또는 변수명",
+      "target": "구체적인 URL 또는 변수명", 
       "purpose": "설정 목적",
-      "waitCondition": "대기 조건 (선택사항)"
+      "waitCondition": "WebUI.waitForPageLoad|WebUI.waitForElementPresent"
     }
   ],
   "preConditionActions": [
     {
-      "step": "사전 조건 단계",
-      "action": "Katalon 액션",
+      "step": "세분화된 사전 조건 단계",
+      "action": "Katalon 액션", 
       "element": "대상 요소",
       "value": "입력값 (해당시)",
-      "objectPath": "Object Repository 경로"
+      "objectPath": "Object Repository 경로",
+      "waitBefore": "액션 실행 전 대기 조건",
+      "waitAfter": "액션 완료 후 대기 조건"
     }
   ],
   "riskAnalysis": [
     {
       "risk": "예외상황 설명",
-      "probability": "high|medium|low",
+      "probability": "high|medium|low", 
       "mitigation": "대응 방안",
       "katalonAction": "실제 대응 코드"
     }
@@ -656,11 +668,13 @@ Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
 
 === 설계 요구사항 ===
 1. 각 Step을 정확한 Katalon WebUI 액션으로 매핑
-2. Expected Result의 모든 검증 포인트를 개별 assertion으로 분리
+2. Expected Result의 모든 검증 포인트를 개별 assertion으로 분리  
 3. 액션 실행 전후 안전성 체크 포함
 4. 실패 시 명확한 에러 메시지와 스크린샷 캡처
 5. 동적 대기와 재시도 로직 고려
 6. Object Repository 경로를 실무 표준에 맞게 구성
+7. **중요**: 입력/클릭 액션 후 UI 변화 완료까지 대기 로직 필수 포함
+8. **필수**: 모든 검증 액션 전에 요소 존재/가시성 확인 선행
 
 다음 형식의 JSON만 반환하세요:
 {
@@ -668,19 +682,21 @@ Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
     {
       "stepDescription": "Steps의 원본 설명",
       "preCheck": {
-        "action": "실행 전 확인 액션",
-        "element": "확인할 요소",
+        "action": "WebUI.waitForElementPresent|WebUI.waitForElementVisible",
+        "element": "확인할 요소", 
+        "timeout": "대기 시간(초)",
         "condition": "확인 조건"
       },
       "execution": {
         "action": "주 실행 액션",
-        "element": "대상 요소",
+        "element": "대상 요소", 
         "value": "입력값 (해당시)",
         "objectPath": "Object Repository/PageName/element_name"
       },
       "postCheck": {
-        "action": "실행 후 확인 액션 (선택사항)",
-        "purpose": "확인 목적"
+        "action": "WebUI.waitForElementAttributeValue|WebUI.delay",
+        "purpose": "UI 변화 완료 대기",
+        "timeout": "대기 시간(초)"
       }
     }
   ],
@@ -748,6 +764,9 @@ Step2 Result: ${JSON.stringify(step2Result)}
 - [ ] 각 검증 포인트가 개별 assertion으로 분리되었는가?
 - [ ] 예외 처리가 구체적이고 실용적인가?
 - [ ] 실행 순서가 논리적으로 올바른가?
+- [ ] **필수**: waitFor 액션이 verify 액션보다 앞에 위치하는가?
+- [ ] **필수**: 입력 후 UI 변화 완료 대기가 포함되었는가?
+- [ ] **필수**: Precondition이 상세 단계로 분해되었는가?
 
 완전한 Groovy 스크립트를 반환하세요. JSON이 아닌 순수 코드로만 반환하세요.
 
@@ -979,6 +998,3 @@ function downloadSmartScript() {
 }
 
 console.log('✅ 스마트 매핑 엔진 3단계 버전 로드 완료');
-
-
-
