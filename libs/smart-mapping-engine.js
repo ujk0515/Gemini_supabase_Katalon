@@ -219,22 +219,23 @@ Step2 Result: ${JSON.stringify(step2Result)}
 
 완전한 Groovy 스크립트를 반환하세요. JSON이 아닌 순수 코드로만 반환하세요.
 
+**중요**: import 구문, def 변수 선언, 함수 정의 없이 바로 try 블록부터 시작하세요.
+
 스크립트 구조:
 try {
     // === Environment Setup ===
-    // 각 액션마다 한글 주석 필수
-    // [페이지 접속/환경 설정 주석]
-    [환경 설정 코드]
+    // 구글 홈페이지 접속
+    WebUI.navigateToUrl('https://www.google.com')
+    WebUI.waitForPageLoad(10)
     
     // === Test Actions ===  
-    // 각 액션마다 한글 주석 필수
-    // [테스트 액션 설명 주석]
-    [테스트 실행 코드]
+    // 인풋박스 클릭 및 텍스트 입력
+    WebUI.click(findTestObject('GoogleHomePage/input_search'))
+    WebUI.setText(findTestObject('GoogleHomePage/input_search'), '테스트값')
     
     // === Result Validation ===
-    // 각 검증마다 한글 주석 필수
-    // [검증 내용 설명 주석]
-    [결과 검증 코드]
+    // 입력된 텍스트 검증
+    WebUI.verifyElementAttributeValue(findTestObject('GoogleHomePage/input_search'), 'value', '테스트값', 10)
     
 } catch (Exception e) {
     WebUI.takeScreenshot('failure_screenshot_' + System.currentTimeMillis() + '.png')
