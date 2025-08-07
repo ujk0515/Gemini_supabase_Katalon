@@ -812,7 +812,19 @@ ${script}
 
     showResult(script) {
         document.getElementById('smartResult').style.display = 'block';
-        document.getElementById('smartGeneratedScript').textContent = script;
+        
+        // 스크립트 영역 스타일 초기화 (일반 답변 후 스크립트 생성 시)
+        const scriptElement = document.getElementById('smartGeneratedScript');
+        scriptElement.style.background = '#1f2937';
+        scriptElement.style.color = '#e2e8f0';
+        scriptElement.style.fontFamily = 'Fira Code, Courier New, monospace';
+        scriptElement.style.fontSize = '13px';
+        scriptElement.style.lineHeight = '1.6';
+        scriptElement.style.padding = '20px';
+        scriptElement.style.borderRadius = '12px';
+        scriptElement.style.border = '1px solid #374151';
+        
+        scriptElement.textContent = script;
         window.smartGeneratedScript = script;
         
         // 점수 표시 추가 (1초 후)
@@ -822,13 +834,13 @@ ${script}
     }
 }
 
-// 전역 함수들 (기존과 동일)
+// 전역 함수들
 window.smartEngine = new SmartMappingEngine();
 
 async function startSmartMapping() {
     const input = document.getElementById('smartTestcaseInput').value.trim();
     if (!input) {
-        alert('테스트케이스를 입력해주세요.');
+        alert('텍스트를 입력해주세요.');
         return;
     }
 
@@ -849,7 +861,7 @@ async function startSmartMapping() {
 function copySmartScript() {
     if (window.smartGeneratedScript) {
         navigator.clipboard.writeText(window.smartGeneratedScript).then(() => {
-            alert('✅ 스크립트가 클립보드에 복사되었습니다');
+            alert('✅ 내용이 클립보드에 복사되었습니다');
         });
     }
 }
@@ -860,10 +872,15 @@ function downloadSmartScript() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'smart_katalon_script.groovy';
+        a.download = 'smart_result.txt';
         a.click();
         URL.revokeObjectURL(url);
     }
 }
 
-console.log('✅ 스마트 매핑 엔진 3단계 버전 로드 완료 (점수 표시 기능 포함)');
+// 전역 함수 등록
+window.startSmartMapping = startSmartMapping;
+window.copySmartScript = copySmartScript;
+window.downloadSmartScript = downloadSmartScript;
+
+console.log('✅ 스마트 매핑 엔진 로드 완료 (일반 질문 필터링 포함)');
