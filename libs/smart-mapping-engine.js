@@ -551,6 +551,11 @@
  * libs/smart-mapping-engine.js
  */
 
+/**
+ * 스마트 매핑 엔진 - 3단계 분석 버전
+ * libs/smart-mapping-engine.js
+ */
+
 class SmartMappingEngine {
     constructor() {
         this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
@@ -612,6 +617,11 @@ Expected Result: "${parsedTC.expectedResult}"
 - Precondition을 2-3개 핵심 액션으로만 분해 (과도한 세분화 금지)
 - 중복 대기 로직 최소화
 - 각 액션은 반드시 필요한 경우에만 포함
+
+** 절대 금지사항 **
+- 하드코딩된 문자열 사용 금지 (URL, 데이터값 등)
+- 모든 값은 GlobalVariable, 테스트 데이터, 또는 변수로 처리
+- '유효한 인증번호', '회원가입 페이지 URL' 같은 placeholder 금지
 
 다음 형식의 JSON만 반환하세요:
 {
@@ -676,6 +686,8 @@ Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
 4. 실패 시 명확한 에러 메시지와 스크린샷 캡처
 5. **간결성**: 필수 대기 로직만 포함, 중복 제거
 6. Object Repository 경로를 실무 표준에 맞게 구성
+7. **반복 패턴 최소화**: 비슷한 검증은 배열이나 반복문 고려
+8. **유연성**: GlobalVariable, 테스트 데이터 활용으로 하드코딩 금지
 
 다음 형식의 JSON만 반환하세요:
 {
@@ -746,6 +758,7 @@ Step2 Result: ${JSON.stringify(step2Result)}
 5. **필수 대기만**: 과도한 waitFor 남발 금지
 6. 실제 Object Repository 경로 사용
 7. **상태 구분**: disabled vs not present 정확히 구분
+8. **하드코딩 절대 금지**: 모든 값을 GlobalVariable 또는 변수로 처리
 
 === 코드 품질 체크리스트 ===
 - [ ] 스크립트 길이가 적정한가? (20-40라인 목표)
@@ -753,6 +766,9 @@ Step2 Result: ${JSON.stringify(step2Result)}
 - [ ] disabled 상태 검증에 적절한 액션을 사용했는가?
 - [ ] 논리적 모순이 없는가? (존재확인→바로존재안함확인 등)
 - [ ] 핵심 기능만 포함되고 부차적 요소는 제거했는가?
+- [ ] **절대 필수**: 하드코딩된 문자열이 전혀 없는가?
+- [ ] **반복 최적화**: 비슷한 검증 로직이 효율적으로 처리되었는가?
+- [ ] **유연성**: GlobalVariable이나 테스트 데이터를 적절히 활용했는가?
 
 완전한 Groovy 스크립트를 반환하세요. JSON이 아닌 순수 코드로만 반환하세요.
 
