@@ -1,71 +1,4 @@
 /**
-     * 유연한 테스트케이스 파싱 (어떤 형태든 처리)
-     */
-    parseTestcase(text) {
-        console.log('🔍 유연한 입력 분석 시작:', text);
-        
-        // 원본 텍스트 그대로 포함
-        const result = { 
-            originalInput: text.trim(),
-            summary: '', 
-            precondition: [], 
-            steps: [], 
-            expectedResult: '' 
-        };
-
-        // 빈 입력 처리
-        if (!text || !text.trim()) {
-            console.log('❌ 빈 입력');
-            return result;
-        }
-
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-        let currentSection = null;
-
-        // 구조화된 형태 파싱 시도
-        for (const line of lines) {
-            if (line.toLowerCase().includes('summary')) {
-                currentSection = 'summary';
-                const colonIndex = line.indexOf(':');
-                if (colonIndex !== -1) result.summary = line.substring(colonIndex + 1).trim();
-            } else if (line.toLowerCase().includes('precondition')) {
-                currentSection = 'precondition';
-            } else if (line.toLowerCase().includes('steps')) {
-                currentSection = 'steps';
-            } else if (line.toLowerCase().includes('expected result')) {
-                currentSection = 'expectedResult';
-                const colonIndex = line.indexOf(':');
-                if (colonIndex !== -1) result.expectedResult = line.substring(colonIndex + 1).trim();
-            } else if (currentSection === 'precondition' && line) {
-                result.precondition.push(line);
-            } else if (currentSection === 'steps' && line) {
-                result.steps.push(line);
-            } else if (currentSection === 'expectedResult' && line) {
-                if (result.expectedResult) result.expectedResult += ' ' + line;
-                else result.expectedResult = line;
-            }
-        }
-
-        // 구조화된 데이터가 없으면 자연어/키워드로 판단
-        if (!result.summary && !result.steps.length && !result.expectedResult) {
-            console.log('🤖 자연어/키워드 입력으로 판단');
-            
-            // 전체 텍스트를 summary로 설정
-            result.summary = text.trim();
-            
-            // 간단한 키워드 기반 추론
-            if (text.toLowerCase().includes('로그인')) {
-                result.steps = ['로그인 페이지 이동', 'ID 입력', '비밀번호 입력', '로그인 버튼 클릭'];
-                result.expectedResult = '로그인 성공';
-            } else if (text.toLowerCase().includes('검색')) {
-                result.steps = ['검색 페이지 이동', '검색어 입력', '검색 실행'];
-                result.expectedResult = '검색 결과 표시';
-            } else if (text.toLowerCase().includes('업로드')) {
-                result.steps = ['파일 선택', '업로드 실행'];
-                result.expectedResult = '업로드 성공';
-            } else {
-                // 일반적인 추론
-                result.steps = ['테스트 대상 페이지 이/**
 * 스마트 매핑 엔진 - 3단계 분석 버전 (점수 표시 기능 포함)
 * libs/smart-mapping-engine.js
 */
@@ -106,8 +39,7 @@ throw error;
 }
 
 /**
-     * 1단계: 상황 파악 + 환경 설정
-     * 1단계: 상황 파악 + 환경 설정 (유연한 입력 처리)
+    * 1단계: 상황 파악 + 환경 설정
     */
 async analyzeSituationAndEnvironment(parsedTC) {
 this.updateProgress(1, '🔍 상황 파악 및 환경 설정 분석 중...');
@@ -132,25 +64,6 @@ Expected Result: "${parsedTC.expectedResult}"
 - Precondition을 2-3개 핵심 액션으로만 분해 (과도한 세분화 금지)
 - 중복 대기 로직 최소화
 - 각 액션은 반드시 필요한 경우에만 포함
-사용자가 입력한 텍스트를 분석하여 테스트 목적을 파악하고 환경 설정을 결정해주세요.
-
-=== 입력된 텍스트 ===
-${JSON.stringify(parsedTC)}
-
-=== 분석 지침 ===
-입력된 텍스트가 어떤 형태든(자연어, 단순 설명, 구조화된 테스트케이스 등) 상관없이:
-
-1. **테스트 목적 추론**: 사용자가 무엇을 테스트하려는지 파악
-2. **환경 설정 결정**: 필요한 브라우저, URL, 초기 설정 등
-3. **사전 조건 정리**: 테스트 실행 전 필요한 준비사항
-4. **예외상황 예측**: 발생 가능한 문제들과 대응방안
-5. **Object Repository 구조**: 요소 경로 체계 설계
-
-=== 입력 유형별 처리 ===
-- **구조화된 TC**: Summary, Steps 등이 명확히 구분된 경우
-- **자연어 설명**: "구글에서 검색하고 싶다" 같은 일반 문장
-- **단순 키워드**: "로그인 테스트", "파일 업로드" 등
-- **혼합 형태**: 일부만 구조화되거나 불완전한 형태
 
 ** 절대 금지사항 **
 - 하드코딩된 문자열 사용 금지 (URL, 데이터값 등)
@@ -159,39 +72,25 @@ ${JSON.stringify(parsedTC)}
 
 다음 형식의 JSON만 반환하세요:
 {
-  "testPurpose": "테스트의 핵심 목적 (한 문장)",
-  "testPurpose": "추론된 테스트의 핵심 목적",
+ "testPurpose": "테스트의 핵심 목적 (한 문장)",
  "testScope": "groovy_method_name_format",
  "environmentSetup": [
    {
      "action": "WebUI.navigateToUrl",
-      "target": "구체적인 URL 또는 변수명", 
-      "target": "GlobalVariable.targetUrl 또는 적절한 변수명", 
+     "target": "구체적인 URL 또는 변수명", 
      "purpose": "설정 목적",
      "waitCondition": "WebUI.waitForPageLoad|WebUI.waitForElementPresent"
    }
  ],
-  "preConditionActions": [
-  "inferredPreconditions": [
+ "preConditionActions": [
    {
-      "step": "핵심 사전 조건만 (2-3개)",
-      "step": "추론된 사전 조건",
+     "step": "핵심 사전 조건만 (2-3개)",
      "action": "Katalon 액션", 
      "element": "대상 요소",
      "value": "입력값 (해당시)",
      "objectPath": "Object Repository 경로"
    }
  ],
-  "inferredSteps": [
-    {
-      "step": "추론된 테스트 단계",
-      "action": "Katalon 액션",
-      "element": "대상 요소", 
-      "value": "입력값 (해당시)",
-      "objectPath": "Object Repository 경로"
-    }
-  ],
-  "inferredExpectedResult": "추론된 예상 결과",
  "riskAnalysis": [
    {
      "risk": "예외상황 설명",
@@ -213,62 +112,39 @@ return result;
 }
 
 /**
-     * 2단계: 핵심 액션 + 검증 통합
-     * 2단계: 핵심 액션 + 검증 통합 (유연한 입력 처리)
+    * 2단계: 핵심 액션 + 검증 통합
     */
 async mapActionsAndValidation(parsedTC, step1Result) {
 this.updateProgress(2, '⚡ 액션 매핑 및 검증 로직 설계 중...');
 
 const prompt = `
 테스트 Steps와 Expected Result를 분석하여 실행 액션과 검증 로직을 통합 설계해주세요.
-1단계에서 추론된 정보를 바탕으로 실행 액션과 검증 로직을 설계해주세요.
 
 === 입력 정보 ===
 Steps: ${JSON.stringify(parsedTC.steps)}
 Expected Result: "${parsedTC.expectedResult}"
 Environment Setup: ${JSON.stringify(step1Result.environmentSetup)}
 Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
-=== 원본 입력 텍스트 ===
-${JSON.stringify(parsedTC)}
-
-=== 1단계 추론 결과 ===
-테스트 목적: ${step1Result.testPurpose}
-추론된 사전조건: ${JSON.stringify(step1Result.inferredPreconditions || [])}
-추론된 테스트 단계: ${JSON.stringify(step1Result.inferredSteps || [])}
-추론된 예상결과: ${step1Result.inferredExpectedResult || ''}
-환경 설정: ${JSON.stringify(step1Result.environmentSetup)}
 
 === 설계 요구사항 ===
 1. 각 Step을 정확한 Katalon WebUI 액션으로 매핑
 2. Expected Result의 모든 검증 포인트를 개별 assertion으로 분리  
-1. 추론된 테스트 단계를 정확한 Katalon WebUI 액션으로 매핑
-2. 추론된 예상결과를 개별 assertion으로 분리  
 3. **중요**: disabled/enabled 상태와 present/not present 구분 정확히
 4. 실패 시 명확한 에러 메시지와 스크린샷 캡처
 5. **간결성**: 필수 대기 로직만 포함, 중복 제거
 6. Object Repository 경로를 실무 표준에 맞게 구성
 7. **반복 패턴 최소화**: 비슷한 검증은 배열이나 반복문 고려
 8. **유연성**: GlobalVariable, 테스트 데이터 활용으로 하드코딩 금지
-7. **유연성**: GlobalVariable, 테스트 데이터 활용으로 하드코딩 금지
-
-=== 입력 형태별 처리 ===
-- **구조화된 입력**: 명확한 Steps가 있는 경우 → 직접 매핑
-- **자연어 입력**: "구글에서 검색" → 브라우저 열기, 구글 이동, 검색창 입력 등으로 분해
-- **단순 설명**: "로그인 테스트" → ID 입력, PW 입력, 로그인 버튼 클릭으로 추론
-- **키워드 나열**: "파일업로드, 확인" → 파일선택, 업로드 버튼, 성공 메시지 확인으로 구성
 
 다음 형식의 JSON만 반환하세요:
 {
  "mainActions": [
    {
-      "stepDescription": "Steps의 원본 설명",
-      "stepDescription": "추론된 또는 명시된 단계 설명",
+     "stepDescription": "Steps의 원본 설명",
      "execution": {
-        "action": "주 실행 액션",
-        "action": "WebUI 액션",
+       "action": "주 실행 액션",
        "element": "대상 요소", 
-        "value": "입력값 (해당시)",
-        "value": "GlobalVariable.testValue 또는 적절한 변수",
+       "value": "입력값 (해당시)",
        "objectPath": "Object Repository/PageName/element_name"
      },
      "waitAfter": "필수 시에만 UI 변화 대기"
@@ -276,20 +152,16 @@ ${JSON.stringify(parsedTC)}
  ],
  "validationLogic": [
    {
-      "expectedPoint": "Expected Result의 각 포인트",
-      "assertion": "정확한 Katalon 검증 액션 (disabled=verifyElementNotClickable, not present=verifyElementNotPresent)",
-      "expectedPoint": "추론된 검증 포인트",
-      "assertion": "적절한 Katalon 검증 액션",
+     "expectedPoint": "Expected Result의 각 포인트",
+     "assertion": "정확한 Katalon 검증 액션 (disabled=verifyElementNotClickable, not present=verifyElementNotPresent)",
      "element": "검증 대상 요소",
-      "expectedValue": "예상값",
-      "expectedValue": "GlobalVariable 또는 변수",
+     "expectedValue": "예상값",
      "objectPath": "Object Repository 경로"
    }
  ],
  "errorHandling": [
    {
-      "scenario": "오류 시나리오",
-      "scenario": "예상 오류 상황",
+     "scenario": "오류 시나리오",
      "detection": "감지 방법",
      "recovery": "복구 액션",
      "logging": "로그 메시지"
@@ -392,43 +264,95 @@ return cleanedResult;
 }
 
 /**
-    * AI 기반 스크립트 품질 평가 함수
+     * 스크립트 품질 평가 함수
+     * AI 기반 스크립트 품질 평가 함수
     */
-async evaluateScriptQuality(script) {
-const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.
+    evaluateScriptQuality(script) {
+        let score = 100;
+        let issues = [];
+        
+        // 1. 잘못된 텍스트 검증 체크 (-15점)
+        if (script.includes('verifyTextEquals') && (script.includes('input') || script.includes('Input'))) {
+            score -= 15;
+            issues.push('입력창 텍스트 검증 방법');
+        }
+        
+        // 2. 불필요한 delay 체크 (-5점)
+        if (script.includes('WebUI.delay(') || script.includes('.delay(')) {
+            score -= 5;
+            issues.push('불필요한 지연');
+        }
+        
+        // 3. 하드코딩 URL 체크 (-10점)
+        const hardcodedUrls = script.match(/'https?:\/\/[^']+'/g);
+        if (hardcodedUrls && hardcodedUrls.length > 0) {
+            score -= 10;
+            issues.push('하드코딩된 URL');
+        }
+        
+        // 4. import 구문 체크 (-5점)
+        if (script.includes('import ')) {
+            score -= 5;
+            issues.push('불필요한 import 구문');
+        }
+        
+        // 5. def 변수 선언 체크 (-5점)
+        if (script.includes('def ')) {
+            score -= 5;
+            issues.push('불필요한 변수 선언');
+        }
+        
+        // 6. 함수 정의 체크 (-10점)
+        if (script.match(/def\s+\w+\s*\(/)) {
+            score -= 10;
+            issues.push('불필요한 함수 정의');
+        }
+        
+        // 7. 주석 헤더 체크 (-3점)
+        if (script.includes('// Katalon Smart Generated') || script.includes('// Purpose:')) {
+            score -= 3;
+            issues.push('불필요한 헤더 주석');
+        }
+        
+        // 8. 불필요한 요소 존재 확인 체크 (-5점)
+        if (script.includes('elementPresent(') && script.includes('if (')) {
+            score -= 5;
+            issues.push('과도한 요소 검증');
+    async evaluateScriptQuality(script) {
+        const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.
 
 === 평가 대상 스크립트 ===
 ${script}
 
 === 평가 기준 ===
 1. **코드 품질 (30점)**
-  - 정확한 Katalon WebUI 액션 사용
-  - 입력창 텍스트 검증 방법 (verifyElementAttributeValue vs verifyTextEquals)
-  - 예외 처리 완전성
-  - 논리적 순서
+   - 정확한 Katalon WebUI 액션 사용
+   - 입력창 텍스트 검증 방법 (verifyElementAttributeValue vs verifyTextEquals)
+   - 예외 처리 완전성
+   - 논리적 순서
 
 2. **실행 가능성 (25점)**
-  - 실제 실행 시 오류 발생 가능성
-  - Object Repository 경로 타당성
-  - 필수 대기 로직 적절성
-  - 브라우저 제어 완전성
+   - 실제 실행 시 오류 발생 가능성
+   - Object Repository 경로 타당성
+   - 필수 대기 로직 적절성
+   - 브라우저 제어 완전성
 
 3. **효율성 (20점)**
-  - 불필요한 코드 제거 정도
-  - 중복 로직 최소화
-  - 적절한 스크립트 길이
-  - 성능 최적화
+   - 불필요한 코드 제거 정도
+   - 중복 로직 최소화
+   - 적절한 스크립트 길이
+   - 성능 최적화
 
 4. **가독성 (15점)**
-  - 주석의 적절성과 명확성
-  - 코드 구조화 수준
-  - 변수명과 경로명 직관성
+   - 주석의 적절성과 명확성
+   - 코드 구조화 수준
+   - 변수명과 경로명 직관성
 
 5. **표준 준수 (10점)**
-  - Katalon 표준 코딩 규칙
-  - GlobalVariable 활용
-  - 하드코딩 방지
-  - 함수 정의 없이 직접 실행
+   - Katalon 표준 코딩 규칙
+   - GlobalVariable 활용
+   - 하드코딩 방지
+   - 함수 정의 없이 직접 실행
 
 === 특별 감점 요소 ===
 - import 구문 존재: -5점
@@ -442,68 +366,73 @@ ${script}
 
 다음 JSON 형식으로만 반환하세요:
 {
- "score": 85,
- "grade": "양호",
- "issues": ["구체적인 문제점1", "구체적인 문제점2"],
- "strengths": ["잘된 부분1", "잘된 부분2"],
- "recommendation": "개선 권장사항"
+  "score": 85,
+  "grade": "양호",
+  "issues": ["구체적인 문제점1", "구체적인 문제점2"],
+  "strengths": ["잘된 부분1", "잘된 부분2"],
+  "recommendation": "개선 권장사항"
 }`;
 
-try {
-console.log('🤖 AI 스크립트 품질 평가 시작...');
-
-const result = await this.callGemini(prompt);
-console.log('✅ AI 평가 완료:', result);
-
-// JSON 파싱 시도
-if (typeof result === 'string') {
-try {
-const cleanedResult = result
-.replace(/```json\s*/g, '')
-.replace(/```\s*/g, '')
-.trim();
-
-const jsonStart = cleanedResult.indexOf('{');
-const jsonEnd = cleanedResult.lastIndexOf('}');
-
-if (jsonStart !== -1 && jsonEnd !== -1) {
-const jsonText = cleanedResult.substring(jsonStart, jsonEnd + 1);
-return JSON.parse(jsonText);
+        try {
+            console.log('🤖 AI 스크립트 품질 평가 시작...');
+            
+            const result = await this.callGemini(prompt);
+            console.log('✅ AI 평가 완료:', result);
+            
+            // JSON 파싱 시도
+            if (typeof result === 'string') {
+                try {
+                    const cleanedResult = result
+                        .replace(/```json\s*/g, '')
+                        .replace(/```\s*/g, '')
+                        .trim();
+                    
+                    const jsonStart = cleanedResult.indexOf('{');
+                    const jsonEnd = cleanedResult.lastIndexOf('}');
+                    
+                    if (jsonStart !== -1 && jsonEnd !== -1) {
+                        const jsonText = cleanedResult.substring(jsonStart, jsonEnd + 1);
+                        return JSON.parse(jsonText);
+                    }
+                } catch (parseError) {
+                    console.warn('AI 평가 JSON 파싱 실패:', parseError);
+                }
+            } else if (typeof result === 'object') {
+                return result;
+            }
+            
+            // Fallback: 기본 응답
+            return {
+                score: 75,
+                grade: "보통",
+                issues: ["AI 평가 파싱 실패"],
+                strengths: ["기본 구조 양호"],
+                recommendation: "수동 검토 필요"
+            };
+            
+        } catch (error) {
+            console.error('❌ AI 평가 실패:', error);
+            
+            // 에러 발생 시 기본 평가
+            return {
+                score: 70,
+                grade: "평가불가",
+                issues: ["AI 평가 시스템 오류"],
+                strengths: ["코드 생성 완료"],
+                recommendation: "네트워크 연결 확인 후 재시도"
+            };
 }
-} catch (parseError) {
-console.warn('AI 평가 JSON 파싱 실패:', parseError);
-}
-} else if (typeof result === 'object') {
-return result;
-}
-
-// Fallback: 기본 응답
-return {
-score: 75,
-grade: "보통",
-issues: ["AI 평가 파싱 실패"],
-strengths: ["기본 구조 양호"],
-recommendation: "수동 검토 필요"
-};
-
-} catch (error) {
-console.error('❌ AI 평가 실패:', error);
-
-// 에러 발생 시 기본 평가
-return {
-score: 70,
-grade: "평가불가",
-issues: ["AI 평가 시스템 오류"],
-strengths: ["코드 생성 완료"],
-recommendation: "네트워크 연결 확인 후 재시도"
-};
-}
+        
+        return { score: Math.max(0, score), issues };
 }
 
 /**
-    * AI 평가 결과 표시 함수
+     * 점수 표시 함수
+     * AI 평가 결과 표시 함수
     */
-async displayScriptScore(script) {
+    displayScriptScore(script) {
+        const evaluation = this.evaluateScriptQuality(script);
+    async displayScriptScore(script) {
 const panel = document.getElementById('scriptScorePanel');
 const circle = document.getElementById('scoreCircle');
 const value = document.getElementById('scoreValue');
@@ -511,89 +440,99 @@ const details = document.getElementById('scoreDetails');
 
 if (!panel || !circle || !value || !details) return;
 
-// 로딩 상태 표시
+        // 점수에 따른 등급 결정
+        let grade, className;
+        if (evaluation.score >= 90) {
+            grade = '우수';
+            className = 'score-excellent';
+        } else if (evaluation.score >= 80) {
+            grade = '양호';
+            className = 'score-good';
+        } else if (evaluation.score >= 70) {
+            grade = '보통';
+            className = 'score-fair';
+        } else {
+            grade = '개선필요';
+            className = 'score-poor';
+        }
+        
+        // UI 업데이트
+        value.textContent = evaluation.score;
+        circle.className = `score-circle ${className}`;
+        
+        let detailText = `등급: ${grade}`;
+        if (evaluation.issues.length > 0) {
+            detailText += `\n\n개선사항:\n• ${evaluation.issues.join('\n• ')}`;
+        } else {
+            detailText += '\n\n✅ 완벽한 스크립트!';
+        }
+        
+        details.textContent = detailText;
+        // 로딩 상태 표시
 panel.style.display = 'block';
-value.textContent = '...';
-circle.className = 'score-circle score-fair';
-details.textContent = '🤖 AI가 평가 중...\n잠시만 기다려주세요';
+        value.textContent = '...';
+        circle.className = 'score-circle score-fair';
+        details.textContent = '🤖 AI가 평가 중...\n잠시만 기다려주세요';
 
-try {
-// AI 평가 실행
-const evaluation = await this.evaluateScriptQuality(script);
-
-// 점수에 따른 등급 및 색상 결정
-let className;
-if (evaluation.score >= 90) {
-className = 'score-excellent';
-} else if (evaluation.score >= 80) {
-className = 'score-good';
-} else if (evaluation.score >= 70) {
-className = 'score-fair';
-} else {
-className = 'score-poor';
-}
-
-// UI 업데이트
-value.textContent = evaluation.score;
-circle.className = `score-circle ${className}`;
-
-// 상세 정보 구성
-let detailText = `등급: ${evaluation.grade}`;
-
-if (evaluation.strengths && evaluation.strengths.length > 0) {
-detailText += `\n\n✅ 잘된 부분:\n• ${evaluation.strengths.join('\n• ')}`;
-}
-
-if (evaluation.issues && evaluation.issues.length > 0) {
-detailText += `\n\n⚠️ 개선사항:\n• ${evaluation.issues.join('\n• ')}`;
-}
-
-if (evaluation.recommendation) {
-detailText += `\n\n💡 권장사항:\n${evaluation.recommendation}`;
-}
-
-details.textContent = detailText;
-
-console.log(`🤖 AI 평가 결과: ${evaluation.score}점 (${evaluation.grade})`);
-
-} catch (error) {
-console.error('❌ 점수 표시 실패:', error);
-
-// 에러 시 기본 표시
-value.textContent = '?';
-circle.className = 'score-circle score-poor';
-details.textContent = '❌ 평가 실패\n네트워크를 확인하고\n다시 시도해주세요';
-}
+        console.log(`📊 스크립트 점수: ${evaluation.score}점 (${grade})`);
+        try {
+            // AI 평가 실행
+            const evaluation = await this.evaluateScriptQuality(script);
+            
+            // 점수에 따른 등급 및 색상 결정
+            let className;
+            if (evaluation.score >= 90) {
+                className = 'score-excellent';
+            } else if (evaluation.score >= 80) {
+                className = 'score-good';
+            } else if (evaluation.score >= 70) {
+                className = 'score-fair';
+            } else {
+                className = 'score-poor';
+            }
+            
+            // UI 업데이트
+            value.textContent = evaluation.score;
+            circle.className = `score-circle ${className}`;
+            
+            // 상세 정보 구성
+            let detailText = `등급: ${evaluation.grade}`;
+            
+            if (evaluation.strengths && evaluation.strengths.length > 0) {
+                detailText += `\n\n✅ 잘된 부분:\n• ${evaluation.strengths.join('\n• ')}`;
+            }
+            
+            if (evaluation.issues && evaluation.issues.length > 0) {
+                detailText += `\n\n⚠️ 개선사항:\n• ${evaluation.issues.join('\n• ')}`;
+            }
+            
+            if (evaluation.recommendation) {
+                detailText += `\n\n💡 권장사항:\n${evaluation.recommendation}`;
+            }
+            
+            details.textContent = detailText;
+            
+            console.log(`🤖 AI 평가 결과: ${evaluation.score}점 (${evaluation.grade})`);
+            
+        } catch (error) {
+            console.error('❌ 점수 표시 실패:', error);
+            
+            // 에러 시 기본 표시
+            value.textContent = '?';
+            circle.className = 'score-circle score-poor';
+            details.textContent = '❌ 평가 실패\n네트워크를 확인하고\n다시 시도해주세요';
+        }
 }
 
 /**
-     * 테스트케이스 파싱 (기존과 동일)
-     * 유연한 테스트케이스 파싱 (어떤 형태든 처리)
+    * 테스트케이스 파싱 (기존과 동일)
     */
 parseTestcase(text) {
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-        const result = { summary: '', precondition: [], steps: [], expectedResult: '' };
-        console.log('🔍 유연한 입력 분석 시작:', text);
-        
-        // 원본 텍스트 그대로 포함
-        const result = { 
-            originalInput: text.trim(),
-            summary: '', 
-            precondition: [], 
-            steps: [], 
-            expectedResult: '' 
-        };
+const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+const result = { summary: '', precondition: [], steps: [], expectedResult: '' };
 
-        // 빈 입력 처리
-        if (!text || !text.trim()) {
-            console.log('❌ 빈 입력');
-            return result;
-        }
-
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
 let currentSection = null;
 
-        // 구조화된 형태 파싱 시도
 for (const line of lines) {
 if (line.toLowerCase().includes('summary')) {
 currentSection = 'summary';
@@ -617,31 +556,6 @@ else result.expectedResult = line;
 }
 }
 
-        // 구조화된 데이터가 없으면 자연어/키워드로 판단
-        if (!result.summary && !result.steps.length && !result.expectedResult) {
-            console.log('🤖 자연어/키워드 입력으로 판단');
-            
-            // 전체 텍스트를 summary로 설정
-            result.summary = text.trim();
-            
-            // 간단한 키워드 기반 추론
-            if (text.toLowerCase().includes('로그인')) {
-                result.steps = ['로그인 페이지 이동', 'ID 입력', '비밀번호 입력', '로그인 버튼 클릭'];
-                result.expectedResult = '로그인 성공';
-            } else if (text.toLowerCase().includes('검색')) {
-                result.steps = ['검색 페이지 이동', '검색어 입력', '검색 실행'];
-                result.expectedResult = '검색 결과 표시';
-            } else if (text.toLowerCase().includes('업로드')) {
-                result.steps = ['파일 선택', '업로드 실행'];
-                result.expectedResult = '업로드 성공';
-            } else {
-                // 일반적인 추론
-                result.steps = ['테스트 대상 페이지 이동', '필요한 액션 실행'];
-                result.expectedResult = '테스트 성공';
-            }
-        }
-
-        console.log('✅ 파싱 완료:', result);
 return result;
 }
 
@@ -765,10 +679,14 @@ document.getElementById('smartResult').style.display = 'block';
 document.getElementById('smartGeneratedScript').textContent = script;
 window.smartGeneratedScript = script;
 
-// 점수 표시 추가 (1초 후)
-setTimeout(async () => {
-await this.displayScriptScore(script);
-}, 1000);
+        // 점수 표시 추가 (0.5초 후)
+        setTimeout(() => {
+            this.displayScriptScore(script);
+        }, 500);
+        // 점수 표시 추가 (1초 후)
+        setTimeout(async () => {
+            await this.displayScriptScore(script);
+        }, 1000);
 }
 }
 
