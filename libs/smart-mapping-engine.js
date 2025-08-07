@@ -225,31 +225,29 @@ Step2 Result: ${JSON.stringify(step2Result)}
 // Purpose: [구체적인 테스트 목적]
 // Generated at: [타임스탬프]
 // ========================================
-@Test
-def [메소드명]() {
-    try {
-        // === Environment Setup ===
-        // 각 액션마다 한글 주석 필수
-        // [페이지 접속/환경 설정 주석]
-        [환경 설정 코드]
-        
-        // === Test Actions ===  
-        // 각 액션마다 한글 주석 필수
-        // [테스트 액션 설명 주석]
-        [테스트 실행 코드]
-        
-        // === Result Validation ===
-        // 각 검증마다 한글 주석 필수
-        // [검증 내용 설명 주석]
-        [결과 검증 코드]
-        
-    } catch (Exception e) {
-        WebUI.takeScreenshot('failure_screenshot_' + System.currentTimeMillis() + '.png')
-        WebUI.comment("Test failed: " + e.getMessage())
-        throw e
-    } finally {
-        WebUI.closeBrowser()
-    }
+
+try {
+    // === Environment Setup ===
+    // 각 액션마다 한글 주석 필수
+    // [페이지 접속/환경 설정 주석]
+    [환경 설정 코드]
+    
+    // === Test Actions ===  
+    // 각 액션마다 한글 주석 필수
+    // [테스트 액션 설명 주석]
+    [테스트 실행 코드]
+    
+    // === Result Validation ===
+    // 각 검증마다 한글 주석 필수
+    // [검증 내용 설명 주석]
+    [결과 검증 코드]
+    
+} catch (Exception e) {
+    WebUI.takeScreenshot('failure_screenshot_' + System.currentTimeMillis() + '.png')
+    WebUI.comment("Test failed: " + e.getMessage())
+    throw e
+} finally {
+    WebUI.closeBrowser()
 }
 
 추가 검토: 스크립트 생성 후 실행 불가능한 코드, Object Repository 일관성, 논리적 순서, 예외 처리 완전성, 검증 로직 충분성을 자체 점검하여 수정하세요.`;
