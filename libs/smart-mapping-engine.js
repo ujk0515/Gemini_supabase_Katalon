@@ -1,5 +1,5 @@
 /**
- * 스마트 매핑 엔진 - 3단계 분석 버전
+ * 스마트 매핑 엔진 - 3단계 분석 버전 (점수 표시 기능 포함)
  * libs/smart-mapping-engine.js
  */
 
@@ -264,6 +264,110 @@ try {
     }
 
     /**
+     * 스크립트 품질 평가 함수
+     */
+    evaluateScriptQuality(script) {
+        let score = 100;
+        let issues = [];
+        
+        // 1. 잘못된 텍스트 검증 체크 (-15점)
+        if (script.includes('verifyTextEquals') && (script.includes('input') || script.includes('Input'))) {
+            score -= 15;
+            issues.push('입력창 텍스트 검증 방법');
+        }
+        
+        // 2. 불필요한 delay 체크 (-5점)
+        if (script.includes('WebUI.delay(') || script.includes('.delay(')) {
+            score -= 5;
+            issues.push('불필요한 지연');
+        }
+        
+        // 3. 하드코딩 URL 체크 (-10점)
+        const hardcodedUrls = script.match(/'https?:\/\/[^']+'/g);
+        if (hardcodedUrls && hardcodedUrls.length > 0) {
+            score -= 10;
+            issues.push('하드코딩된 URL');
+        }
+        
+        // 4. import 구문 체크 (-5점)
+        if (script.includes('import ')) {
+            score -= 5;
+            issues.push('불필요한 import 구문');
+        }
+        
+        // 5. def 변수 선언 체크 (-5점)
+        if (script.includes('def ')) {
+            score -= 5;
+            issues.push('불필요한 변수 선언');
+        }
+        
+        // 6. 함수 정의 체크 (-10점)
+        if (script.match(/def\s+\w+\s*\(/)) {
+            score -= 10;
+            issues.push('불필요한 함수 정의');
+        }
+        
+        // 7. 주석 헤더 체크 (-3점)
+        if (script.includes('// Katalon Smart Generated') || script.includes('// Purpose:')) {
+            score -= 3;
+            issues.push('불필요한 헤더 주석');
+        }
+        
+        // 8. 불필요한 요소 존재 확인 체크 (-5점)
+        if (script.includes('elementPresent(') && script.includes('if (')) {
+            score -= 5;
+            issues.push('과도한 요소 검증');
+        }
+        
+        return { score: Math.max(0, score), issues };
+    }
+
+    /**
+     * 점수 표시 함수
+     */
+    displayScriptScore(script) {
+        const evaluation = this.evaluateScriptQuality(script);
+        const panel = document.getElementById('scriptScorePanel');
+        const circle = document.getElementById('scoreCircle');
+        const value = document.getElementById('scoreValue');
+        const details = document.getElementById('scoreDetails');
+        
+        if (!panel || !circle || !value || !details) return;
+        
+        // 점수에 따른 등급 결정
+        let grade, className;
+        if (evaluation.score >= 90) {
+            grade = '우수';
+            className = 'score-excellent';
+        } else if (evaluation.score >= 80) {
+            grade = '양호';
+            className = 'score-good';
+        } else if (evaluation.score >= 70) {
+            grade = '보통';
+            className = 'score-fair';
+        } else {
+            grade = '개선필요';
+            className = 'score-poor';
+        }
+        
+        // UI 업데이트
+        value.textContent = evaluation.score;
+        circle.className = `score-circle ${className}`;
+        
+        let detailText = `등급: ${grade}`;
+        if (evaluation.issues.length > 0) {
+            detailText += `\n\n개선사항:\n• ${evaluation.issues.join('\n• ')}`;
+        } else {
+            detailText += '\n\n✅ 완벽한 스크립트!';
+        }
+        
+        details.textContent = detailText;
+        panel.style.display = 'block';
+        
+        console.log(`📊 스크립트 점수: ${evaluation.score}점 (${grade})`);
+    }
+
+    /**
      * 테스트케이스 파싱 (기존과 동일)
      */
     parseTestcase(text) {
@@ -416,7 +520,12 @@ try {
     showResult(script) {
         document.getElementById('smartResult').style.display = 'block';
         document.getElementById('smartGeneratedScript').textContent = script;
-        window.smartGeneratedScript = script; // 전역 저장
+        window.smartGeneratedScript = script;
+        
+        // 점수 표시 추가 (0.5초 후)
+        setTimeout(() => {
+            this.displayScriptScore(script);
+        }, 500);
     }
 }
 
@@ -464,4 +573,4 @@ function downloadSmartScript() {
     }
 }
 
-console.log('✅ 스마트 매핑 엔진 3단계 버전 로드 완료');
+console.log('✅ 스마트 매핑 엔진 3단계 버전 로드 완료 (점수 표시 기능 포함)');
