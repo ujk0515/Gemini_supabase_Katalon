@@ -556,6 +556,11 @@
  * libs/smart-mapping-engine.js
  */
 
+/**
+ * 스마트 매핑 엔진 - 3단계 분석 버전
+ * libs/smart-mapping-engine.js
+ */
+
 class SmartMappingEngine {
     constructor() {
         this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
@@ -925,14 +930,23 @@ def [메소드명]() {
     updateProgress(step, message) {
         this.currentStep = step;
         
-        // 3단계 표시 업데이트
-        for (let i = 1; i <= 3; i++) {
+        // 3단계를 6단계로 매핑
+        const stepMapping = {
+            1: [1, 2], // 1단계 → 1,2단계 표시
+            2: [3, 4], // 2단계 → 3,4단계 표시  
+            3: [5, 6]  // 3단계 → 5,6단계 표시
+        };
+        
+        const mappedSteps = stepMapping[step] || [];
+        
+        // 6단계 표시 업데이트
+        for (let i = 1; i <= 6; i++) {
             const stepElement = document.getElementById(`step${i}`);
             if (stepElement) {
-                if (i < step) {
-                    stepElement.className = 'step completed';
-                } else if (i === step) {
+                if (mappedSteps.includes(i)) {
                     stepElement.className = 'step active';
+                } else if (i < Math.min(...mappedSteps)) {
+                    stepElement.className = 'step completed';
                 } else {
                     stepElement.className = 'step';
                 }
@@ -1000,3 +1014,4 @@ function downloadSmartScript() {
 }
 
 console.log('✅ 스마트 매핑 엔진 3단계 버전 로드 완료');
+
