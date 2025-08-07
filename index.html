@@ -341,8 +341,18 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           </div>
 
           <!-- 우측: 결과 영역 -->
-          <div id="smartResult" class="smart-result-container" style="display: none;">
+          <div id="smartResult" class="smart-result-container" style="display: none; position: relative;">
             <h3>🎯 생성된 Katalon 스크립트</h3>
+            
+            <!-- 점수 패널 추가 -->
+            <div id="scriptScorePanel" class="script-score-panel" style="display: none;">
+              <div class="score-header">스크립트 품질</div>
+              <div id="scoreCircle" class="score-circle">
+                <span id="scoreValue">0</span>
+              </div>
+              <div id="scoreDetails" class="score-details">분석 중...</div>
+            </div>
+            
             <div class="script-actions">
               <button onclick="copySmartScript()">📋 복사</button>
               <button onclick="downloadSmartScript()">⬇️ 다운로드</button>
