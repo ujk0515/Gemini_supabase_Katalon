@@ -1,4 +1,71 @@
 /**
+     * 유연한 테스트케이스 파싱 (어떤 형태든 처리)
+     */
+    parseTestcase(text) {
+        console.log('🔍 유연한 입력 분석 시작:', text);
+        
+        // 원본 텍스트 그대로 포함
+        const result = { 
+            originalInput: text.trim(),
+            summary: '', 
+            precondition: [], 
+            steps: [], 
+            expectedResult: '' 
+        };
+
+        // 빈 입력 처리
+        if (!text || !text.trim()) {
+            console.log('❌ 빈 입력');
+            return result;
+        }
+
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+        let currentSection = null;
+
+        // 구조화된 형태 파싱 시도
+        for (const line of lines) {
+            if (line.toLowerCase().includes('summary')) {
+                currentSection = 'summary';
+                const colonIndex = line.indexOf(':');
+                if (colonIndex !== -1) result.summary = line.substring(colonIndex + 1).trim();
+            } else if (line.toLowerCase().includes('precondition')) {
+                currentSection = 'precondition';
+            } else if (line.toLowerCase().includes('steps')) {
+                currentSection = 'steps';
+            } else if (line.toLowerCase().includes('expected result')) {
+                currentSection = 'expectedResult';
+                const colonIndex = line.indexOf(':');
+                if (colonIndex !== -1) result.expectedResult = line.substring(colonIndex + 1).trim();
+            } else if (currentSection === 'precondition' && line) {
+                result.precondition.push(line);
+            } else if (currentSection === 'steps' && line) {
+                result.steps.push(line);
+            } else if (currentSection === 'expectedResult' && line) {
+                if (result.expectedResult) result.expectedResult += ' ' + line;
+                else result.expectedResult = line;
+            }
+        }
+
+        // 구조화된 데이터가 없으면 자연어/키워드로 판단
+        if (!result.summary && !result.steps.length && !result.expectedResult) {
+            console.log('🤖 자연어/키워드 입력으로 판단');
+            
+            // 전체 텍스트를 summary로 설정
+            result.summary = text.trim();
+            
+            // 간단한 키워드 기반 추론
+            if (text.toLowerCase().includes('로그인')) {
+                result.steps = ['로그인 페이지 이동', 'ID 입력', '비밀번호 입력', '로그인 버튼 클릭'];
+                result.expectedResult = '로그인 성공';
+            } else if (text.toLowerCase().includes('검색')) {
+                result.steps = ['검색 페이지 이동', '검색어 입력', '검색 실행'];
+                result.expectedResult = '검색 결과 표시';
+            } else if (text.toLowerCase().includes('업로드')) {
+                result.steps = ['파일 선택', '업로드 실행'];
+                result.expectedResult = '업로드 성공';
+            } else {
+                // 일반적인 추론
+                result.steps = ['테스트 대상 페이지 이/**
  * 스마트 매핑 엔진 - 3단계 분석 버전 (점수 표시 기능 포함)
  * libs/smart-mapping-engine.js
  */
@@ -39,58 +106,67 @@ class SmartMappingEngine {
     }
 
     /**
-     * 1단계: 상황 파악 + 환경 설정
+     * 1단계: 상황 파악 + 환경 설정 (유연한 입력 처리)
      */
     async analyzeSituationAndEnvironment(parsedTC) {
         this.updateProgress(1, '🔍 상황 파악 및 환경 설정 분석 중...');
 
         const prompt = `
-테스트케이스를 종합 분석하여 테스트 목적을 파악하고 환경 설정을 결정해주세요.
+사용자가 입력한 텍스트를 분석하여 테스트 목적을 파악하고 환경 설정을 결정해주세요.
 
-=== 테스트케이스 정보 ===
-Summary: "${parsedTC.summary}"
-Precondition: ${JSON.stringify(parsedTC.precondition)}
-Steps: ${JSON.stringify(parsedTC.steps)}
-Expected Result: "${parsedTC.expectedResult}"
+=== 입력된 텍스트 ===
+${JSON.stringify(parsedTC)}
 
-=== 분석 요구사항 ===
-1. 테스트의 핵심 목적과 검증 포인트 파악
-2. Precondition 기반 사전 환경 설정 액션 결정 (핵심만)
-3. 테스트 실행 중 발생 가능한 주요 예외상황 3가지 예측
-4. 각 예외상황별 간단한 대응 방안 수립
-5. Object Repository 경로 구조 설계
+=== 분석 지침 ===
+입력된 텍스트가 어떤 형태든(자연어, 단순 설명, 구조화된 테스트케이스 등) 상관없이:
 
-** 중요 제약사항 **
-- Precondition을 2-3개 핵심 액션으로만 분해 (과도한 세분화 금지)
-- 중복 대기 로직 최소화
-- 각 액션은 반드시 필요한 경우에만 포함
+1. **테스트 목적 추론**: 사용자가 무엇을 테스트하려는지 파악
+2. **환경 설정 결정**: 필요한 브라우저, URL, 초기 설정 등
+3. **사전 조건 정리**: 테스트 실행 전 필요한 준비사항
+4. **예외상황 예측**: 발생 가능한 문제들과 대응방안
+5. **Object Repository 구조**: 요소 경로 체계 설계
+
+=== 입력 유형별 처리 ===
+- **구조화된 TC**: Summary, Steps 등이 명확히 구분된 경우
+- **자연어 설명**: "구글에서 검색하고 싶다" 같은 일반 문장
+- **단순 키워드**: "로그인 테스트", "파일 업로드" 등
+- **혼합 형태**: 일부만 구조화되거나 불완전한 형태
 
 ** 절대 금지사항 **
 - 하드코딩된 문자열 사용 금지 (URL, 데이터값 등)
 - 모든 값은 GlobalVariable, 테스트 데이터, 또는 변수로 처리
-- '유효한 인증번호', '회원가입 페이지 URL' 같은 placeholder 금지
 
 다음 형식의 JSON만 반환하세요:
 {
-  "testPurpose": "테스트의 핵심 목적 (한 문장)",
+  "testPurpose": "추론된 테스트의 핵심 목적",
   "testScope": "groovy_method_name_format",
   "environmentSetup": [
     {
       "action": "WebUI.navigateToUrl",
-      "target": "구체적인 URL 또는 변수명", 
+      "target": "GlobalVariable.targetUrl 또는 적절한 변수명", 
       "purpose": "설정 목적",
       "waitCondition": "WebUI.waitForPageLoad|WebUI.waitForElementPresent"
     }
   ],
-  "preConditionActions": [
+  "inferredPreconditions": [
     {
-      "step": "핵심 사전 조건만 (2-3개)",
+      "step": "추론된 사전 조건",
       "action": "Katalon 액션", 
       "element": "대상 요소",
       "value": "입력값 (해당시)",
       "objectPath": "Object Repository 경로"
     }
   ],
+  "inferredSteps": [
+    {
+      "step": "추론된 테스트 단계",
+      "action": "Katalon 액션",
+      "element": "대상 요소", 
+      "value": "입력값 (해당시)",
+      "objectPath": "Object Repository 경로"
+    }
+  ],
+  "inferredExpectedResult": "추론된 예상 결과",
   "riskAnalysis": [
     {
       "risk": "예외상황 설명",
@@ -112,39 +188,48 @@ Expected Result: "${parsedTC.expectedResult}"
     }
 
     /**
-     * 2단계: 핵심 액션 + 검증 통합
+     * 2단계: 핵심 액션 + 검증 통합 (유연한 입력 처리)
      */
     async mapActionsAndValidation(parsedTC, step1Result) {
         this.updateProgress(2, '⚡ 액션 매핑 및 검증 로직 설계 중...');
 
         const prompt = `
-테스트 Steps와 Expected Result를 분석하여 실행 액션과 검증 로직을 통합 설계해주세요.
+1단계에서 추론된 정보를 바탕으로 실행 액션과 검증 로직을 설계해주세요.
 
-=== 입력 정보 ===
-Steps: ${JSON.stringify(parsedTC.steps)}
-Expected Result: "${parsedTC.expectedResult}"
-Environment Setup: ${JSON.stringify(step1Result.environmentSetup)}
-Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
+=== 원본 입력 텍스트 ===
+${JSON.stringify(parsedTC)}
+
+=== 1단계 추론 결과 ===
+테스트 목적: ${step1Result.testPurpose}
+추론된 사전조건: ${JSON.stringify(step1Result.inferredPreconditions || [])}
+추론된 테스트 단계: ${JSON.stringify(step1Result.inferredSteps || [])}
+추론된 예상결과: ${step1Result.inferredExpectedResult || ''}
+환경 설정: ${JSON.stringify(step1Result.environmentSetup)}
 
 === 설계 요구사항 ===
-1. 각 Step을 정확한 Katalon WebUI 액션으로 매핑
-2. Expected Result의 모든 검증 포인트를 개별 assertion으로 분리  
+1. 추론된 테스트 단계를 정확한 Katalon WebUI 액션으로 매핑
+2. 추론된 예상결과를 개별 assertion으로 분리  
 3. **중요**: disabled/enabled 상태와 present/not present 구분 정확히
 4. 실패 시 명확한 에러 메시지와 스크린샷 캡처
 5. **간결성**: 필수 대기 로직만 포함, 중복 제거
 6. Object Repository 경로를 실무 표준에 맞게 구성
-7. **반복 패턴 최소화**: 비슷한 검증은 배열이나 반복문 고려
-8. **유연성**: GlobalVariable, 테스트 데이터 활용으로 하드코딩 금지
+7. **유연성**: GlobalVariable, 테스트 데이터 활용으로 하드코딩 금지
+
+=== 입력 형태별 처리 ===
+- **구조화된 입력**: 명확한 Steps가 있는 경우 → 직접 매핑
+- **자연어 입력**: "구글에서 검색" → 브라우저 열기, 구글 이동, 검색창 입력 등으로 분해
+- **단순 설명**: "로그인 테스트" → ID 입력, PW 입력, 로그인 버튼 클릭으로 추론
+- **키워드 나열**: "파일업로드, 확인" → 파일선택, 업로드 버튼, 성공 메시지 확인으로 구성
 
 다음 형식의 JSON만 반환하세요:
 {
   "mainActions": [
     {
-      "stepDescription": "Steps의 원본 설명",
+      "stepDescription": "추론된 또는 명시된 단계 설명",
       "execution": {
-        "action": "주 실행 액션",
+        "action": "WebUI 액션",
         "element": "대상 요소", 
-        "value": "입력값 (해당시)",
+        "value": "GlobalVariable.testValue 또는 적절한 변수",
         "objectPath": "Object Repository/PageName/element_name"
       },
       "waitAfter": "필수 시에만 UI 변화 대기"
@@ -152,16 +237,16 @@ Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
   ],
   "validationLogic": [
     {
-      "expectedPoint": "Expected Result의 각 포인트",
-      "assertion": "정확한 Katalon 검증 액션 (disabled=verifyElementNotClickable, not present=verifyElementNotPresent)",
+      "expectedPoint": "추론된 검증 포인트",
+      "assertion": "적절한 Katalon 검증 액션",
       "element": "검증 대상 요소",
-      "expectedValue": "예상값",
+      "expectedValue": "GlobalVariable 또는 변수",
       "objectPath": "Object Repository 경로"
     }
   ],
   "errorHandling": [
     {
-      "scenario": "오류 시나리오",
+      "scenario": "예상 오류 상황",
       "detection": "감지 방법",
       "recovery": "복구 액션",
       "logging": "로그 메시지"
