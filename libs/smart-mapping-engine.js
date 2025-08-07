@@ -546,6 +546,11 @@
  * libs/smart-mapping-engine.js
  */
 
+/**
+ * 스마트 매핑 엔진 - 3단계 분석 버전
+ * libs/smart-mapping-engine.js
+ */
+
 class SmartMappingEngine {
     constructor() {
         this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
@@ -598,15 +603,15 @@ Expected Result: "${parsedTC.expectedResult}"
 
 === 분석 요구사항 ===
 1. 테스트의 핵심 목적과 검증 포인트 파악
-2. Precondition 기반 사전 환경 설정 액션 결정
-3. 테스트 실행 중 발생 가능한 예외상황 최소 5가지 이상 예측
-4. 각 예외상황별 대응 방안 수립
+2. Precondition 기반 사전 환경 설정 액션 결정 (핵심만)
+3. 테스트 실행 중 발생 가능한 주요 예외상황 3가지 예측
+4. 각 예외상황별 간단한 대응 방안 수립
 5. Object Repository 경로 구조 설계
 
 ** 중요 제약사항 **
-- Precondition의 각 항목을 최소 3개 이상 세부 액션으로 분해 필수
-- 모든 사전 조건은 순차적 단계로 명확히 구분
-- 각 액션에는 완료 확인 대기 로직 포함
+- Precondition을 2-3개 핵심 액션으로만 분해 (과도한 세분화 금지)
+- 중복 대기 로직 최소화
+- 각 액션은 반드시 필요한 경우에만 포함
 
 다음 형식의 JSON만 반환하세요:
 {
@@ -622,13 +627,11 @@ Expected Result: "${parsedTC.expectedResult}"
   ],
   "preConditionActions": [
     {
-      "step": "세분화된 사전 조건 단계",
+      "step": "핵심 사전 조건만 (2-3개)",
       "action": "Katalon 액션", 
       "element": "대상 요소",
       "value": "입력값 (해당시)",
-      "objectPath": "Object Repository 경로",
-      "waitBefore": "액션 실행 전 대기 조건",
-      "waitAfter": "액션 완료 후 대기 조건"
+      "objectPath": "Object Repository 경로"
     }
   ],
   "riskAnalysis": [
@@ -669,45 +672,32 @@ Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
 === 설계 요구사항 ===
 1. 각 Step을 정확한 Katalon WebUI 액션으로 매핑
 2. Expected Result의 모든 검증 포인트를 개별 assertion으로 분리  
-3. 액션 실행 전후 안전성 체크 포함
+3. **중요**: disabled/enabled 상태와 present/not present 구분 정확히
 4. 실패 시 명확한 에러 메시지와 스크린샷 캡처
-5. 동적 대기와 재시도 로직 고려
+5. **간결성**: 필수 대기 로직만 포함, 중복 제거
 6. Object Repository 경로를 실무 표준에 맞게 구성
-7. **중요**: 입력/클릭 액션 후 UI 변화 완료까지 대기 로직 필수 포함
-8. **필수**: 모든 검증 액션 전에 요소 존재/가시성 확인 선행
 
 다음 형식의 JSON만 반환하세요:
 {
   "mainActions": [
     {
       "stepDescription": "Steps의 원본 설명",
-      "preCheck": {
-        "action": "WebUI.waitForElementPresent|WebUI.waitForElementVisible",
-        "element": "확인할 요소", 
-        "timeout": "대기 시간(초)",
-        "condition": "확인 조건"
-      },
       "execution": {
         "action": "주 실행 액션",
         "element": "대상 요소", 
         "value": "입력값 (해당시)",
         "objectPath": "Object Repository/PageName/element_name"
       },
-      "postCheck": {
-        "action": "WebUI.waitForElementAttributeValue|WebUI.delay",
-        "purpose": "UI 변화 완료 대기",
-        "timeout": "대기 시간(초)"
-      }
+      "waitAfter": "필수 시에만 UI 변화 대기"
     }
   ],
   "validationLogic": [
     {
       "expectedPoint": "Expected Result의 각 포인트",
-      "assertion": "Katalon 검증 액션",
+      "assertion": "정확한 Katalon 검증 액션 (disabled=verifyElementNotClickable, not present=verifyElementNotPresent)",
       "element": "검증 대상 요소",
       "expectedValue": "예상값",
-      "objectPath": "Object Repository 경로",
-      "failureAction": "실패 시 액션"
+      "objectPath": "Object Repository 경로"
     }
   ],
   "errorHandling": [
@@ -749,24 +739,20 @@ Step1 Result: ${JSON.stringify(step1Result)}
 Step2 Result: ${JSON.stringify(step2Result)}
 
 === 코드 생성 요구사항 ===
-1. 실무에서 바로 사용 가능한 완전한 스크립트
+1. **간결성 우선**: 불필요한 중복 코드 제거
 2. try-catch-finally 구조로 안전성 보장
-3. 각 액션마다 의미있는 주석 추가
-4. WebUI.comment()로 실행 과정 로깅
-5. 스크린샷 캡처 포함 (실패 시)
-6. 동적 대기와 요소 존재 확인
-7. 실제 Object Repository 경로 사용
-8. 메소드명과 타임스탬프를 헤더에 포함
+3. **핵심 주석만**: 각 섹션마다 간단한 주석 (개별 액션마다 불필요)
+4. 스크린샷 캡처 포함 (실패 시)
+5. **필수 대기만**: 과도한 waitFor 남발 금지
+6. 실제 Object Repository 경로 사용
+7. **상태 구분**: disabled vs not present 정확히 구분
 
 === 코드 품질 체크리스트 ===
-- [ ] 모든 findTestObject() 경로가 현실적인가?
-- [ ] WebUI.setText vs WebUI.setEncryptedText 구분이 적절한가?
-- [ ] 각 검증 포인트가 개별 assertion으로 분리되었는가?
-- [ ] 예외 처리가 구체적이고 실용적인가?
-- [ ] 실행 순서가 논리적으로 올바른가?
-- [ ] **필수**: waitFor 액션이 verify 액션보다 앞에 위치하는가?
-- [ ] **필수**: 입력 후 UI 변화 완료 대기가 포함되었는가?
-- [ ] **필수**: Precondition이 상세 단계로 분해되었는가?
+- [ ] 스크립트 길이가 적정한가? (20-40라인 목표)
+- [ ] 중복된 waitFor나 comment가 없는가?
+- [ ] disabled 상태 검증에 적절한 액션을 사용했는가?
+- [ ] 논리적 모순이 없는가? (존재확인→바로존재안함확인 등)
+- [ ] 핵심 기능만 포함되고 부차적 요소는 제거했는가?
 
 완전한 Groovy 스크립트를 반환하세요. JSON이 아닌 순수 코드로만 반환하세요.
 
