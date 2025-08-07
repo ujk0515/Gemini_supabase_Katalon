@@ -80,12 +80,24 @@ class SmartMappingEngine {
     }
 
     /**
-     * 메인 분석 프로세스 시작 - 3단계 버전
+     * 메인 분석 프로세스 시작 - 일반 질문 필터링 추가
      */
     async startAnalysis(testcaseText) {
         try {
             this.showProgress();
-            this.updateProgress(0, '분석 시작...');
+            this.updateProgress(0, '입력 내용 분석 중...');
+
+            // 1차: 일반 질문인지 테스트케이스인지 판단
+            const inputType = await this.analyzeInputType(testcaseText);
+            
+            if (inputType.isGeneralQuestion) {
+                // 일반 질문이면 바로 답변
+                this.showGeneralAnswer(inputType.answer);
+                return inputType.answer;
+            }
+
+            // 테스트케이스로 판단되면 기존 플로우 진행
+            this.updateProgress(0, '테스트케이스 분석 시작...');
 
             // 테스트케이스 파싱
             const parsedTC = this.parseTestcase(testcaseText);
@@ -102,6 +114,90 @@ class SmartMappingEngine {
             console.error('스마트 분석 실패:', error);
             this.updateProgress(-1, `❌ 분석 실패: ${error.message}`);
             throw error;
+        }
+    }
+
+    /**
+     * 입력 유형 분석 (일반 질문 vs 테스트케이스)
+     */
+    async analyzeInputType(text) {
+        const prompt = `다음 사용자 입력을 분석하여 "일반 질문"인지 "테스트케이스 작성 요청"인지 판단해주세요.
+
+=== 사용자 입력 ===
+"${text}"
+
+=== 판단 기준 ===
+
+**일반 질문 (바로 답변):**
+- 안녕하세요, 안녕, 반가워요 등 인사말
+- 카탈론이 뭐야? 테스트 자동화란? 등 정보 질문
+- 오늘 날씨는? 시간이 몇 시야? 등 일상 질문
+- 코딩 방법, 사용법, 설명 요청
+- 단순 대화나 잡담
+
+**테스트케이스 작성 요청:**
+- 구체적인 테스트 시나리오 설명
+- 로그인, 검색, 업로드 등 테스트 액션 포함
+- 브라우저, 웹사이트, 앱 테스트 관련
+- Summary, Steps, Expected Result 등 구조화된 형태
+- "테스트", "확인", "검증" 등의 키워드 + 구체적 동작
+
+다음 JSON 형식으로만 반환하세요:
+{
+  "isGeneralQuestion": true,
+  "category": "greeting|information|casual|testcase",
+  "answer": "친절하고 도움이 되는 답변 (일반 질문인 경우만)",
+  "confidence": 0.95
+}
+
+일반 질문이면 친절하고 도움이 되는 답변을 제공하고, 테스트케이스라면 isGeneralQuestion을 false로 설정하세요.`;
+
+        try {
+            console.log('🔍 입력 유형 분석 중...');
+            
+            const result = await this.callGemini(prompt);
+            console.log('✅ 입력 유형 분석 완료:', result);
+            
+            // JSON 파싱
+            if (typeof result === 'string') {
+                try {
+                    const cleanedResult = result
+                        .replace(/```json\s*/g, '')
+                        .replace(/```\s*/g, '')
+                        .trim();
+                    
+                    const jsonStart = cleanedResult.indexOf('{');
+                    const jsonEnd = cleanedResult.lastIndexOf('}');
+                    
+                    if (jsonStart !== -1 && jsonEnd !== -1) {
+                        const jsonText = cleanedResult.substring(jsonStart, jsonEnd + 1);
+                        return JSON.parse(jsonText);
+                    }
+                } catch (parseError) {
+                    console.warn('입력 유형 분석 JSON 파싱 실패:', parseError);
+                }
+            } else if (typeof result === 'object') {
+                return result;
+            }
+            
+            // Fallback: 테스트케이스로 간주
+            return {
+                isGeneralQuestion: false,
+                category: 'testcase',
+                answer: '',
+                confidence: 0.5
+            };
+            
+        } catch (error) {
+            console.error('❌ 입력 유형 분석 실패:', error);
+            
+            // 에러 시 테스트케이스로 간주
+            return {
+                isGeneralQuestion: false,
+                category: 'testcase', 
+                answer: '',
+                confidence: 0.3
+            };
         }
     }
 
