@@ -220,12 +220,6 @@ Step2 Result: ${JSON.stringify(step2Result)}
 완전한 Groovy 스크립트를 반환하세요. JSON이 아닌 순수 코드로만 반환하세요.
 
 스크립트 구조:
-// ========================================
-// Katalon Smart Generated Test Script  
-// Purpose: [구체적인 테스트 목적]
-// Generated at: [타임스탬프]
-// ========================================
-
 try {
     // === Environment Setup ===
     // 각 액션마다 한글 주석 필수
