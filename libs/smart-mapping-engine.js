@@ -256,8 +256,18 @@ def [메소드명]() {
 
         const result = await this.callGemini(prompt);
         this.analysisResults.step3 = result;
+        
+        // 코드 블록 마크다운 제거
+        let cleanedResult = result;
+        if (typeof result === 'string') {
+            cleanedResult = result
+                .replace(/^```groovy\s*/g, '')  // 시작 부분 제거
+                .replace(/```\s*$/g, '')        // 끝 부분 제거
+                .trim();
+        }
+        
         this.updateProgress(3, '✅ 최종 스크립트 생성 완료!');
-        return result;
+        return cleanedResult;
     }
 
     /**
