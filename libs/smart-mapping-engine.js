@@ -264,69 +264,118 @@ try {
     }
 
     /**
-     * 스크립트 품질 평가 함수
+     * AI 기반 스크립트 품질 평가 함수
      */
-    evaluateScriptQuality(script) {
-        let score = 100;
-        let issues = [];
-        
-        // 1. 잘못된 텍스트 검증 체크 (-15점)
-        if (script.includes('verifyTextEquals') && (script.includes('input') || script.includes('Input'))) {
-            score -= 15;
-            issues.push('입력창 텍스트 검증 방법');
+    async evaluateScriptQuality(script) {
+        const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.
+
+=== 평가 대상 스크립트 ===
+${script}
+
+=== 평가 기준 ===
+1. **코드 품질 (30점)**
+   - 정확한 Katalon WebUI 액션 사용
+   - 입력창 텍스트 검증 방법 (verifyElementAttributeValue vs verifyTextEquals)
+   - 예외 처리 완전성
+   - 논리적 순서
+
+2. **실행 가능성 (25점)**
+   - 실제 실행 시 오류 발생 가능성
+   - Object Repository 경로 타당성
+   - 필수 대기 로직 적절성
+   - 브라우저 제어 완전성
+
+3. **효율성 (20점)**
+   - 불필요한 코드 제거 정도
+   - 중복 로직 최소화
+   - 적절한 스크립트 길이
+   - 성능 최적화
+
+4. **가독성 (15점)**
+   - 주석의 적절성과 명확성
+   - 코드 구조화 수준
+   - 변수명과 경로명 직관성
+
+5. **표준 준수 (10점)**
+   - Katalon 표준 코딩 규칙
+   - GlobalVariable 활용
+   - 하드코딩 방지
+   - 함수 정의 없이 직접 실행
+
+=== 특별 감점 요소 ===
+- import 구문 존재: -5점
+- def 변수 선언: -5점  
+- 함수 정의 (def functionName): -10점
+- 하드코딩된 URL: -10점
+- 입력창에 verifyTextEquals 사용: -15점
+- 불필요한 delay: -5점
+- 과도한 요소 존재 확인: -5점
+- 불필요한 헤더 주석: -3점
+
+다음 JSON 형식으로만 반환하세요:
+{
+  "score": 85,
+  "grade": "양호",
+  "issues": ["구체적인 문제점1", "구체적인 문제점2"],
+  "strengths": ["잘된 부분1", "잘된 부분2"],
+  "recommendation": "개선 권장사항"
+}`;
+
+        try {
+            console.log('🤖 AI 스크립트 품질 평가 시작...');
+            
+            const result = await this.callGemini(prompt);
+            console.log('✅ AI 평가 완료:', result);
+            
+            // JSON 파싱 시도
+            if (typeof result === 'string') {
+                try {
+                    const cleanedResult = result
+                        .replace(/```json\s*/g, '')
+                        .replace(/```\s*/g, '')
+                        .trim();
+                    
+                    const jsonStart = cleanedResult.indexOf('{');
+                    const jsonEnd = cleanedResult.lastIndexOf('}');
+                    
+                    if (jsonStart !== -1 && jsonEnd !== -1) {
+                        const jsonText = cleanedResult.substring(jsonStart, jsonEnd + 1);
+                        return JSON.parse(jsonText);
+                    }
+                } catch (parseError) {
+                    console.warn('AI 평가 JSON 파싱 실패:', parseError);
+                }
+            } else if (typeof result === 'object') {
+                return result;
+            }
+            
+            // Fallback: 기본 응답
+            return {
+                score: 75,
+                grade: "보통",
+                issues: ["AI 평가 파싱 실패"],
+                strengths: ["기본 구조 양호"],
+                recommendation: "수동 검토 필요"
+            };
+            
+        } catch (error) {
+            console.error('❌ AI 평가 실패:', error);
+            
+            // 에러 발생 시 기본 평가
+            return {
+                score: 70,
+                grade: "평가불가",
+                issues: ["AI 평가 시스템 오류"],
+                strengths: ["코드 생성 완료"],
+                recommendation: "네트워크 연결 확인 후 재시도"
+            };
         }
-        
-        // 2. 불필요한 delay 체크 (-5점)
-        if (script.includes('WebUI.delay(') || script.includes('.delay(')) {
-            score -= 5;
-            issues.push('불필요한 지연');
-        }
-        
-        // 3. 하드코딩 URL 체크 (-10점)
-        const hardcodedUrls = script.match(/'https?:\/\/[^']+'/g);
-        if (hardcodedUrls && hardcodedUrls.length > 0) {
-            score -= 10;
-            issues.push('하드코딩된 URL');
-        }
-        
-        // 4. import 구문 체크 (-5점)
-        if (script.includes('import ')) {
-            score -= 5;
-            issues.push('불필요한 import 구문');
-        }
-        
-        // 5. def 변수 선언 체크 (-5점)
-        if (script.includes('def ')) {
-            score -= 5;
-            issues.push('불필요한 변수 선언');
-        }
-        
-        // 6. 함수 정의 체크 (-10점)
-        if (script.match(/def\s+\w+\s*\(/)) {
-            score -= 10;
-            issues.push('불필요한 함수 정의');
-        }
-        
-        // 7. 주석 헤더 체크 (-3점)
-        if (script.includes('// Katalon Smart Generated') || script.includes('// Purpose:')) {
-            score -= 3;
-            issues.push('불필요한 헤더 주석');
-        }
-        
-        // 8. 불필요한 요소 존재 확인 체크 (-5점)
-        if (script.includes('elementPresent(') && script.includes('if (')) {
-            score -= 5;
-            issues.push('과도한 요소 검증');
-        }
-        
-        return { score: Math.max(0, score), issues };
     }
 
     /**
-     * 점수 표시 함수
+     * AI 평가 결과 표시 함수
      */
-    displayScriptScore(script) {
-        const evaluation = this.evaluateScriptQuality(script);
+    async displayScriptScore(script) {
         const panel = document.getElementById('scriptScorePanel');
         const circle = document.getElementById('scoreCircle');
         const value = document.getElementById('scoreValue');
@@ -334,37 +383,59 @@ try {
         
         if (!panel || !circle || !value || !details) return;
         
-        // 점수에 따른 등급 결정
-        let grade, className;
-        if (evaluation.score >= 90) {
-            grade = '우수';
-            className = 'score-excellent';
-        } else if (evaluation.score >= 80) {
-            grade = '양호';
-            className = 'score-good';
-        } else if (evaluation.score >= 70) {
-            grade = '보통';
-            className = 'score-fair';
-        } else {
-            grade = '개선필요';
-            className = 'score-poor';
-        }
-        
-        // UI 업데이트
-        value.textContent = evaluation.score;
-        circle.className = `score-circle ${className}`;
-        
-        let detailText = `등급: ${grade}`;
-        if (evaluation.issues.length > 0) {
-            detailText += `\n\n개선사항:\n• ${evaluation.issues.join('\n• ')}`;
-        } else {
-            detailText += '\n\n✅ 완벽한 스크립트!';
-        }
-        
-        details.textContent = detailText;
+        // 로딩 상태 표시
         panel.style.display = 'block';
+        value.textContent = '...';
+        circle.className = 'score-circle score-fair';
+        details.textContent = '🤖 AI가 평가 중...\n잠시만 기다려주세요';
         
-        console.log(`📊 스크립트 점수: ${evaluation.score}점 (${grade})`);
+        try {
+            // AI 평가 실행
+            const evaluation = await this.evaluateScriptQuality(script);
+            
+            // 점수에 따른 등급 및 색상 결정
+            let className;
+            if (evaluation.score >= 90) {
+                className = 'score-excellent';
+            } else if (evaluation.score >= 80) {
+                className = 'score-good';
+            } else if (evaluation.score >= 70) {
+                className = 'score-fair';
+            } else {
+                className = 'score-poor';
+            }
+            
+            // UI 업데이트
+            value.textContent = evaluation.score;
+            circle.className = `score-circle ${className}`;
+            
+            // 상세 정보 구성
+            let detailText = `등급: ${evaluation.grade}`;
+            
+            if (evaluation.strengths && evaluation.strengths.length > 0) {
+                detailText += `\n\n✅ 잘된 부분:\n• ${evaluation.strengths.join('\n• ')}`;
+            }
+            
+            if (evaluation.issues && evaluation.issues.length > 0) {
+                detailText += `\n\n⚠️ 개선사항:\n• ${evaluation.issues.join('\n• ')}`;
+            }
+            
+            if (evaluation.recommendation) {
+                detailText += `\n\n💡 권장사항:\n${evaluation.recommendation}`;
+            }
+            
+            details.textContent = detailText;
+            
+            console.log(`🤖 AI 평가 결과: ${evaluation.score}점 (${evaluation.grade})`);
+            
+        } catch (error) {
+            console.error('❌ 점수 표시 실패:', error);
+            
+            // 에러 시 기본 표시
+            value.textContent = '?';
+            circle.className = 'score-circle score-poor';
+            details.textContent = '❌ 평가 실패\n네트워크를 확인하고\n다시 시도해주세요';
+        }
     }
 
     /**
@@ -522,10 +593,10 @@ try {
         document.getElementById('smartGeneratedScript').textContent = script;
         window.smartGeneratedScript = script;
         
-        // 점수 표시 추가 (0.5초 후)
-        setTimeout(() => {
-            this.displayScriptScore(script);
-        }, 500);
+        // 점수 표시 추가 (1초 후)
+        setTimeout(async () => {
+            await this.displayScriptScore(script);
+        }, 1000);
     }
 }
 
