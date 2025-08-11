@@ -92,14 +92,6 @@ Expected Result: "${parsedTC.expectedResult}"
       "objectPath": "Object Repository 경로"
     }
   ],
-  "riskAnalysis": [
-    {
-      "risk": "예외상황 설명",
-      "probability": "high|medium|low", 
-      "mitigation": "대응 방안",
-      "katalonAction": "실제 대응 코드"
-    }
-  ],
   "elementStructure": {
     "pageObject": "페이지 분류",
     "expectedElements": ["필요한 요소1", "필요한 요소2"]
@@ -159,15 +151,6 @@ Risk Analysis: ${JSON.stringify(step1Result.riskAnalysis)}
       "expectedValue": "예상값",
       "objectPath": "Object Repository 경로"
     }
-  ],
-  "errorHandling": [
-    {
-      "scenario": "오류 시나리오",
-      "detection": "감지 방법",
-      "recovery": "복구 액션",
-      "logging": "로그 메시지"
-    }
-  ],
   "waitStrategies": [
     {
       "element": "대기할 요소",
