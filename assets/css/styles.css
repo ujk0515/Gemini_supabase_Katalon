@@ -1184,9 +1184,9 @@ table.dataTable thead th {
 
 .script-score-display {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
   width: 100%;
 }
 
@@ -1236,9 +1236,9 @@ table.dataTable thead th {
   line-height: 1.4;
   white-space: pre-line;
   overflow-y: auto;
-  text-align: center;
+  text-align: left;
   padding: 0 8px;
-  max-height: 200px;
+  max-height: 300px;
 }
 
 .quality-placeholder {
@@ -1352,8 +1352,9 @@ table.dataTable thead th {
   }
 
   .score-circle-large {
-    width: 60px;
-    height: 60%;
+    width: 80px;
+    height: 80%;
+    flex-shrink: 0;
     font-size: 14px;
   }
 }
