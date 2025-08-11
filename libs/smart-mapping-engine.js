@@ -8,6 +8,7 @@ class SmartMappingEngine {
         this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
         this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent';
         // this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
         this.analysisResults = {};
         this.currentStep = 0;
     }
@@ -199,13 +200,12 @@ Step2 Result: ${JSON.stringify(step2Result)}
 
 === 코드 생성 요구사항 ===
 1. **간결성 우선**: 불필요한 중복 코드 제거
-2. try-catch-finally 구조로 안전성 보장
+2. try-finally 구조로 브라우저 종료 보장 (catch 블록 절대 금지)
 3. **핵심 주석만**: 각 섹션마다 간단한 주석 (개별 액션마다 불필요)
-4. 스크린샷 캡처 포함 (실패 시)
-5. **필수 대기만**: 과도한 waitFor 남발 금지
-6. 실제 Object Repository 경로 사용
-7. **상태 구분**: disabled vs not present 정확히 구분
-8. **하드코딩 절대 금지**: 모든 값을 GlobalVariable 또는 변수로 처리
+4. **필수 대기만**: 과도한 waitFor 남발 금지
+5. 실제 Object Repository 경로 사용
+6. **상태 구분**: disabled vs not present 정확히 구분
+7. **하드코딩 절대 금지**: 모든 값을 GlobalVariable 또는 변수로 처리
 
 === 코드 품질 체크리스트 ===
 - [ ] 스크립트 길이가 적정한가? (20-40라인 목표)
@@ -219,33 +219,26 @@ Step2 Result: ${JSON.stringify(step2Result)}
 
 완전한 Groovy 스크립트를 반환하세요. JSON이 아닌 순수 코드로만 반환하세요.
 
-**중요**: import 구문, def 변수 선언, 함수 정의 없이 바로 try 블록부터 시작하세요.
+**절대 금지**: import 구문, def 변수 선언, 함수 정의, catch 블록 사용 금지
 
 스크립트 구조:
 try {
     // === Environment Setup ===
-    // 구글 홈페이지 접속
-    WebUI.navigateToUrl('https://www.google.com')
+    WebUI.navigateToUrl(GlobalVariable.BASE_URL)
     WebUI.waitForPageLoad(10)
     
     // === Test Actions ===  
-    // 인풋박스 클릭 및 텍스트 입력
-    WebUI.click(findTestObject('GoogleHomePage/input_search'))
-    WebUI.setText(findTestObject('GoogleHomePage/input_search'), '테스트값')
+    WebUI.click(findTestObject('LoginPage/input_username'))
+    WebUI.setText(findTestObject('LoginPage/input_username'), GlobalVariable.TEST_USERNAME)
     
     // === Result Validation ===
-    // 입력된 텍스트 검증
-    WebUI.verifyElementAttributeValue(findTestObject('GoogleHomePage/input_search'), 'value', '테스트값', 10)
+    WebUI.verifyElementPresent(findTestObject('MainPage/welcome_message'), 10)
     
-} catch (Exception e) {
-    WebUI.takeScreenshot('failure_screenshot_' + System.currentTimeMillis() + '.png')
-    WebUI.comment("Test failed: " + e.getMessage())
-    throw e
 } finally {
     WebUI.closeBrowser()
 }
 
-추가 검토: 스크립트 생성 후 실행 불가능한 코드, Object Repository 일관성, 논리적 순서, 예외 처리 완전성, 검증 로직 충분성을 자체 점검하여 수정하세요.`;
+추가 검토: 스크립트 생성 후 실행 가능한 코드, Object Repository 일관성, 논리적 순서, 브라우저 종료 보장, 검증 로직 충분성을 자체 점검하여 수정하세요.`;
 
         const result = await this.callGemini(prompt);
         this.analysisResults.step3 = result;
@@ -276,7 +269,7 @@ ${script}
 1. **코드 품질 (30점)**
    - 정확한 Katalon WebUI 액션 사용
    - 입력창 텍스트 검증 방법 (verifyElementAttributeValue vs verifyTextEquals)
-   - 예외 처리 완전성
+   - 브라우저 종료 보장
    - 논리적 순서
 
 2. **실행 가능성 (25점)**
@@ -306,6 +299,7 @@ ${script}
 - import 구문 존재: -5점
 - def 변수 선언: -5점  
 - 함수 정의 (def functionName): -10점
+- catch 블록 사용: -15점
 - 하드코딩된 URL: -10점
 - 입력창에 verifyTextEquals 사용: -15점
 - 불필요한 delay: -5점
@@ -373,20 +367,24 @@ ${script}
     }
 
     /**
-     * AI 평가 결과 표시 함수
+     * 새로운 품질 평가 UI 업데이트 함수 (큰 영역용)
      */
-    async displayScriptScore(script) {
-        const panel = document.getElementById('scriptScorePanel');
-        const circle = document.getElementById('scoreCircle');
-        const value = document.getElementById('scoreValue');
-        const details = document.getElementById('scoreDetails');
+    async displayScriptScoreLarge(script) {
+        const scoreDisplay = document.getElementById('smartScriptScore');
+        const circle = document.getElementById('scoreCircleLarge');
+        const value = document.getElementById('scoreValueLarge');
+        const details = document.getElementById('scoreDetailsLarge');
+        const placeholder = document.getElementById('qualityPlaceholder');
         
-        if (!panel || !circle || !value || !details) return;
+        if (!scoreDisplay || !circle || !value || !details) return;
+        
+        // 품질 평가 영역 표시, 플레이스홀더 숨김
+        scoreDisplay.style.display = 'flex';
+        if (placeholder) placeholder.style.display = 'none';
         
         // 로딩 상태 표시
-        panel.style.display = 'block';
         value.textContent = '...';
-        circle.className = 'score-circle score-fair';
+        circle.className = 'score-circle-large score-waiting';
         details.textContent = '🤖 AI가 평가 중...\n잠시만 기다려주세요';
         
         try {
@@ -407,19 +405,19 @@ ${script}
             
             // UI 업데이트
             value.textContent = evaluation.score;
-            circle.className = `score-circle ${className}`;
+            circle.className = `score-circle-large ${className}`;
             
-            // 상세 정보 구성
+            // 상세 정보 구성 (큰 영역에 맞게 축약)
             let detailText = `등급: ${evaluation.grade}`;
             
             if (evaluation.strengths && evaluation.strengths.length > 0) {
                 detailText += `\n\n✅ 잘된 부분:\n• ${evaluation.strengths.join('\n• ')}`;
             }
-            
+
             if (evaluation.issues && evaluation.issues.length > 0) {
                 detailText += `\n\n⚠️ 개선사항:\n• ${evaluation.issues.join('\n• ')}`;
             }
-            
+
             if (evaluation.recommendation) {
                 detailText += `\n\n💡 권장사항:\n${evaluation.recommendation}`;
             }
@@ -433,7 +431,7 @@ ${script}
             
             // 에러 시 기본 표시
             value.textContent = '?';
-            circle.className = 'score-circle score-poor';
+            circle.className = 'score-circle-large score-poor';
             details.textContent = '❌ 평가 실패\n네트워크를 확인하고\n다시 시도해주세요';
         }
     }
@@ -486,6 +484,7 @@ ${script}
                 contents: [{ parts: [{ text: prompt }] }]
             })
         });
+
 
         if (!response.ok) {
             throw new Error(`API Error: ${response.status}`);
@@ -593,14 +592,14 @@ ${script}
         document.getElementById('smartGeneratedScript').textContent = script;
         window.smartGeneratedScript = script;
         
-        // 점수 표시 추가 (1초 후)
+        // 새로운 품질 표시 함수 사용 (1초 후)
         setTimeout(async () => {
-            await this.displayScriptScore(script);
+            await this.displayScriptScoreLarge(script);
         }, 1000);
     }
 }
 
-// 전역 함수들 (기존과 동일)
+// 전역 함수들 (수정됨)
 window.smartEngine = new SmartMappingEngine();
 
 async function startSmartMapping() {
@@ -614,10 +613,34 @@ async function startSmartMapping() {
     button.disabled = true;
     button.innerHTML = '<span class="smart-loading"></span>🧠 분석 중...';
 
+    // 품질 평가 영역 초기화
+    const scoreDisplay = document.getElementById('smartScriptScore');
+    const placeholder = document.getElementById('qualityPlaceholder');
+    const circle = document.getElementById('scoreCircleLarge');
+    const value = document.getElementById('scoreValueLarge');
+    const details = document.getElementById('scoreDetailsLarge');
+
+    if (scoreDisplay && placeholder) {
+        scoreDisplay.style.display = 'flex';
+        placeholder.style.display = 'none';
+        
+        if (circle && value && details) {
+            value.textContent = '...';
+            circle.className = 'score-circle-large score-waiting';
+            details.textContent = '🤖 AI가 테스트케이스를 분석하고\n스크립트 품질을 평가하는 중입니다...';
+        }
+    }
+
     try {
         await window.smartEngine.startAnalysis(input);
     } catch (error) {
         alert('분석 실패: ' + error.message);
+        
+        // 에러 시 품질 평가 영역 초기화
+        if (scoreDisplay && placeholder) {
+            scoreDisplay.style.display = 'none';
+            placeholder.style.display = 'block';
+        }
     } finally {
         button.disabled = false;
         button.innerHTML = '🧠 스마트 분석 시작';

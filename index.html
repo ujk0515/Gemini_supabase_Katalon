@@ -21,21 +21,29 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <style>
+    button.tab-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #e9ecef;
+      color: #6c757d;
+    }
+  </style>
 </head>
 
 <body>
   <header>
-    <button class="tab-button active" data-tab="csv">📊 CSV 파싱</button>
-    <button class="tab-button" data-tab="groovy">⚙️ Groovy 변환</button>
+    <button class="tab-button" data-tab="csv" disabled>📊 CSV 파싱</button>
+    <button class="tab-button active" data-tab="groovy">⚙️ Groovy 변환</button>
     <button class="tab-button" data-tab="report">📈 결과 리포트</button>
-    <button class="tab-button" data-tab="mapping">🔄 테스트케이스 매핑</button>
-    <button class="tab-button" data-tab="tcmerger">📦 TC 병합/분리</button>
+    <button class="tab-button" data-tab="mapping" disabled>🔄 테스트케이스 매핑</button>
+    <button class="tab-button" data-tab="tcmerger" disabled>📦 TC 병합/분리</button>
     <button class="tab-button" data-tab="smart">🧠 스마트 매핑</button>
   </header>
 
   <main>
     <!-- CSV 파싱 탭 -->
-    <div id="csv" class="tab-content active">
+    <div id="csv" class="tab-content">
       <div class="container">
         <div class="csv-header">
           <h2>🔪 WebUI.comment 기반 메타데이터 파서</h2>
@@ -63,7 +71,7 @@
     </div>
 
     <!-- Groovy 변환기 탭 -->
-    <div id="groovy" class="tab-content">
+    <div id="groovy" class="tab-content active">
       <div class="container">
         <div class="groovy-header">
           <h2>📄 Excel ➔ Katalon Test Case 변환기</h2>
@@ -321,38 +329,50 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
         <!-- 6단계 진행바를 상단으로 -->
         <div id="smartProgress" class="smart-progress-container" style="display: none;">
           <div class="progress-steps">
-            <div class="step" id="step1">1️⃣ Summary 이해</div>
-            <div class="step" id="step2">2️⃣ TC 조건 파악</div>
-            <div class="step" id="step3">3️⃣ 환경 구성 검증</div>
-            <div class="step" id="step4">4️⃣ 스텝 동작 매핑</div>
-            <div class="step" id="step5">5️⃣ 조건 충돌 검증</div>
-            <div class="step" id="step6">6️⃣ 결과 수렴 검증</div>
+            <div class="step" id="step1">1. Summary 이해</div>
+            <div class="step" id="step2">2. TC 조건 파악</div>
+            <div class="step" id="step3">3. 환경 구성 검증</div>
+            <div class="step" id="step4">4. 스텝 동작 매핑</div>
+            <div class="step" id="step5">5. 조건 충돌 검증</div>
+            <div class="step" id="step6">6. 결과 수렴 검증</div>
           </div>
           <div class="progress-details" id="progressDetails"></div>
         </div>
 
         <!-- 좌우 2단 레이아웃 -->
         <div class="smart-main-content">
-          <!-- 좌측: TC 입력 -->
+          <!-- 좌측: TC 입력 + 품질 평가 (세로 2분할) -->
           <div class="smart-input-section">
-            <h3>📝 테스트케이스 입력</h3>
-            <textarea id="smartTestcaseInput" class="smart-input-box" placeholder="테스트케이스 전체 내용을 입력하세요..."></textarea>
-            <button class="smart-generate-btn" onclick="startSmartMapping()">🧠 스마트 분석 시작</button>
+
+            <!-- 상단: TC 입력 영역 (기존 높이의 50%) -->
+            <div class="smart-input-top">
+              <h3>📝 테스트케이스 입력</h3>
+              <textarea id="smartTestcaseInput" class="smart-input-box" placeholder="테스트케이스 전체 내용을 입력하세요..."></textarea>
+              <button class="smart-generate-btn" onclick="startSmartMapping()">🧠 스마트 분석 시작</button>
+            </div>
+
+            <!-- 하단: 스크립트 품질 평가 영역 (새로 추가) -->
+            <div class="smart-quality-section">
+              <h3>📊 스크립트 품질 평가</h3>
+              <div class="quality-content">
+                <div id="smartScriptScore" class="script-score-display" style="display: none;">
+                  <div id="scoreCircleLarge" class="score-circle-large score-waiting">
+                    <span id="scoreValueLarge">?</span>
+                  </div>
+                  <div id="scoreDetailsLarge" class="score-details-large">분석을 시작하면 AI가 생성된 스크립트의 품질을 평가합니다</div>
+                </div>
+                <div id="qualityPlaceholder" class="quality-placeholder">
+                  스크립트가 생성되면 AI 품질 평가가 여기에 표시됩니다
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <!-- 우측: 결과 영역 -->
-          <div id="smartResult" class="smart-result-container" style="display: none; position: relative;">
+          <!-- 우측: 결과 영역 (기존 유지) -->
+          <div id="smartResult" class="smart-result-container" style="display: none;">
             <h3>🎯 생성된 Katalon 스크립트</h3>
-            
-            <!-- 점수 패널 추가 -->
-            <div id="scriptScorePanel" class="script-score-panel" style="display: none;">
-              <div class="score-header">스크립트 품질</div>
-              <div id="scoreCircle" class="score-circle">
-                <span id="scoreValue">0</span>
-              </div>
-              <div id="scoreDetails" class="score-details">분석 중...</div>
-            </div>
-            
+
             <div class="script-actions">
               <button onclick="copySmartScript()">📋 복사</button>
               <button onclick="downloadSmartScript()">⬇️ 다운로드</button>
@@ -422,6 +442,11 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     // 수정된 코드 (안전한 탭 전환)
     document.querySelectorAll('.tab-button').forEach(button => {
       button.addEventListener('click', () => {
+        // 버튼이 비활성화 상태이면 아무것도 하지 않음
+        if (button.disabled) {
+          return;
+        }
+
         const tabId = button.getAttribute('data-tab');
         const targetTab = document.getElementById(tabId);
 
