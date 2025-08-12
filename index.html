@@ -346,8 +346,14 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
 
             <!-- 상단: TC 입력 영역 (기존 높이의 50%) -->
             <div class="smart-input-top">
-              <h3>📝 테스트케이스 입력</h3>
-              <textarea id="smartTestcaseInput" class="smart-input-box" placeholder="테스트케이스 전체 내용을 입력하세요..."></textarea>
+              <div class="input-header">
+                <h3>📝 테스트케이스 입력</h3>
+                <select id="aiModelSelect" class="ai-model-dropdown">
+                  <option value="gemma-3-27b-it">Gemma-3-27b-it</option>
+                  <option value="gemini-2.0-flash">Gemini-2.0-flash</option>
+                </select>
+              </div>
+              <textarea id="smartTestcaseInput" class="smart-input-box" placeholder="..."></textarea>
               <button class="smart-generate-btn" onclick="startSmartMapping()">🧠 스마트 분석 시작</button>
             </div>
 
@@ -431,7 +437,8 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
   <script src="libs/testcase_mapping/katalon_mapper.js"></script>
   <script src="libs/testcase_mapping/testcase_ui_controller.js"></script>
   <script src="libs/testcase_mapping/testcase_mapper_supabase.js"></script>
-  <script src="libs/smart-mapping-engine.js"></script>
+  <script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
+  <script src="libs/ai_engine_gemini-2.0-flash.js"></script>
 
   <!-- 4. 애플리케이션 메인 스크립트들 -->
   <script src="js/ui-utils.js"></script>
@@ -547,6 +554,16 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     function hideLoading(buttonElement, originalText) {
       buttonElement.innerHTML = originalText;
       buttonElement.disabled = false;
+    }
+
+    async function startSmartMapping() {
+        const selectedModel = document.getElementById('aiModelSelect').value;
+        
+        if (selectedModel === 'gemma-3-27b-it') {
+            await startSmartMappingGemma();
+        } else if (selectedModel === 'gemini-2.0-flash') {
+            await startSmartMappingGemini();
+        }
     }
   </script>
 </body>
