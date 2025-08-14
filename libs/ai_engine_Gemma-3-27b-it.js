@@ -363,44 +363,40 @@ ${script}
      * AI 기반 스크립트 개선 함수
      */
     async improveScriptBasedOnEvaluation(originalScript, evaluation) {
-        console.log('🛠️ AI 검토 반영 시작...');
+        console.log('🛠️ AI 검토 반영 v4 시작...');
         
-        const prompt = `기존 Katalon Groovy 스크립트를 AI 평가 결과를 바탕으로 점진적으로 개선해주세요.
+        const prompt = `다음은 이미 생성된 Katalon Groovy 스크립트입니다. 이 스크립트를 거의 그대로 유지하면서, 아래 지적된 문제점들을 분석하여 실제 개선이 필요한 부분만 최소한으로 수정해주세요.
 
-=== 기존 스크립트 ===
-${originalScript}
+    === 원본 스크립트 (수정 금지 - 개선 필요 부분만 수정) ===
+    ${originalScript}
 
-=== AI 평가 결과 ===
-개선사항: ${JSON.stringify(evaluation.issues)}
-권장사항: ${evaluation.recommendation}
-현재 점수: ${evaluation.score}점
+    === 검토된 문제점들 ===
+    ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') : '특별한 문제점 없음'}
 
-=== 개선 지침 ===
-1. **최소 변경 원칙**: 기존 스크립트의 핵심 로직과 구조를 최대한 유지
-2. **선별적 적용**: 개선사항 중 실제 필요한 부분만 적용
-3. **안전성 우선**: 스크립트 동작에 영향을 줄 수 있는 과도한 변경 금지
-4. **표준 준수**: Katalon WebUI 표준 및 기존 코딩 스타일 유지
+    === 수정 규칙 (엄격히 준수) ===
+    1. **99% 보존**: 원본 스크립트의 구조, 순서, 변수명, 주석을 그대로 유지
+    2. **개선사항 파악**: 위에 나열된 문제점들을 분석하여 실제 개선이 필요한 부분만 식별
+    3. **최소한의 수정**: 개선이 필요한 해당 부분에만 최소한의 수정 적용
+    4. **라인별 수정**: 전체 재작성 절대 금지, 개선사항이 확인된 라인만 수정
+    5. **추가 금지**: 새로운 코드, 주석, 기능 추가 절대 금지
 
-=== 개선 우선순위 ===
-1. **높음**: 문법 오류, 잘못된 함수 사용, 보안 문제
-2. **중간**: 불필요한 코드 제거, 대기 로직 최적화
-3. **낮음**: 주석 정리, 변수명 개선
+    === 절대 금지사항 ===
+    - 전체 스크립트 구조 변경
+    - 새로운 섹션이나 주석 추가  
+    - 기존 정상 코드 수정
+    - 변수명이나 Object Repository 경로 변경
+    - 코드 순서 재배열
 
-=== 금지사항 ===
-- 전체 스크립트 재작성 금지
-- 핵심 테스트 로직 변경 금지
-- 새로운 기능 추가 금지
-- Object Repository 경로 대폭 변경 금지
+    === 출력 조건 ===
+    - 수정된 부분이 5줄 이하가 되도록 최소한만 수정
+    - 원본과 거의 동일하되 개선사항만 반영된 스크립트 반환
+    - 설명 없이 순수 Groovy 코드만 반환
 
-=== 출력 형식 ===
-개선된 Groovy 스크립트만 반환하세요. 설명이나 마크다운 블록 없이 순수 코드만 출력하세요.
-
-개선 후 예상 점수: ${Math.min(100, evaluation.score + 10)}점 이상`;
+    현재 점수 ${evaluation.score}점에서 85점 이상이 목표입니다.`;
 
         try {
             const result = await this.callGemini(prompt);
             
-            // 코드 블록 마크다운 제거
             let improvedScript = result;
             if (typeof result === 'string') {
                 improvedScript = result
@@ -409,7 +405,7 @@ ${originalScript}
                     .trim();
             }
             
-            console.log('✅ 스크립트 개선 완료');
+            console.log('✅ 스크립트 개선 완료 (v4)');
             return improvedScript;
         } catch (error) {
             console.error('❌ 스크립트 개선 실패:', error);

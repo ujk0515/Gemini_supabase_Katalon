@@ -348,6 +348,8 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
             <div class="smart-input-top">
               <div class="input-header">
                 <h3>📝 테스트케이스 입력</h3>
+                <div class="header-controls"></div>
+                <button id="smartResetBtn" class="smart-reset-btn">🔄 초기화</button>
                 <select id="aiModelSelect" class="ai-model-dropdown">
                   <option value="gemma-3-27b-it">Gemma-3-27b-it</option>
                   <option value="gemini-2.0-flash">Gemini-2.0-flash</option>
@@ -558,44 +560,154 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     }
 
     async function startSmartMapping() {
-        const selectedModel = document.getElementById('aiModelSelect').value;
-        
-        // 엔진 존재 확인 및 생성
-        if (selectedModel === 'gemma-3-27b-it') {
-            if (!window.gemmaEngine) {
-                console.log('Gemma 엔진 생성 중...');
-                window.gemmaEngine = new GemmaEngine();
-            }
-            await startSmartMappingGemma();
-        } else if (selectedModel === 'gemini-2.0-flash') {
-            if (!window.geminiFlashEngine) {
-                console.log('Gemini Flash 엔진 생성 중...');
-                window.geminiFlashEngine = new GeminiFlashEngine();
-            }
-            await startSmartMappingGemini();
+      const selectedModel = document.getElementById('aiModelSelect').value;
+
+      // 엔진 존재 확인 및 생성
+      if (selectedModel === 'gemma-3-27b-it') {
+        if (!window.gemmaEngine) {
+          console.log('Gemma 엔진 생성 중...');
+          window.gemmaEngine = new GemmaEngine();
         }
+        await startSmartMappingGemma();
+      } else if (selectedModel === 'gemini-2.0-flash') {
+        if (!window.geminiFlashEngine) {
+          console.log('Gemini Flash 엔진 생성 중...');
+          window.geminiFlashEngine = new GeminiFlashEngine();
+        }
+        await startSmartMappingGemini();
+      }
     }
 
-        // AI 검토 반영 함수 (모델별 분기)
+    // AI 검토 반영 함수 (모델별 분기)
     function improveSmartScript() {
-        const selectedModel = document.getElementById('aiModelSelect').value;
-        
-        if (selectedModel === 'gemma-3-27b-it') {
-            if (window.gemmaEngine) {
-                window.gemmaEngine.improveAndReEvaluateScript();
-            } else {
-                alert('Gemma AI 엔진을 찾을 수 없습니다.');
-            }
-        } else if (selectedModel === 'gemini-2.0-flash') {
-            if (window.geminiFlashEngine) {
-                window.geminiFlashEngine.improveAndReEvaluateScript();
-            } else {
-                alert('Gemini Flash AI 엔진을 찾을 수 없습니다.');
-            }
+      const selectedModel = document.getElementById('aiModelSelect').value;
+
+      if (selectedModel === 'gemma-3-27b-it') {
+        if (window.gemmaEngine) {
+          window.gemmaEngine.improveAndReEvaluateScript();
         } else {
-            alert('지원되지 않는 AI 모델입니다.');
+          alert('Gemma AI 엔진을 찾을 수 없습니다.');
         }
+      } else if (selectedModel === 'gemini-2.0-flash') {
+        if (window.geminiFlashEngine) {
+          window.geminiFlashEngine.improveAndReEvaluateScript();
+        } else {
+          alert('Gemini Flash AI 엔진을 찾을 수 없습니다.');
+        }
+      } else {
+        alert('지원되지 않는 AI 모델입니다.');
+      }
     }
+    // 스마트 매핑 전체 초기화 함수
+    function resetSmartMapping() {
+      console.log('🔄 스마트 매핑 전체 초기화 시작');
+
+      // 확인 대화상자
+      if (!confirm('스마트 매핑을 초기화하시겠습니까?\n모든 입력 내용과 결과가 삭제됩니다.')) {
+        return;
+      }
+
+      try {
+        // 1. 입력 영역 초기화
+        const testcaseInput = document.getElementById('smartTestcaseInput');
+        if (testcaseInput) {
+          testcaseInput.value = '';
+        }
+
+        // 2. AI 모델 선택 기본값으로 리셋
+        const modelSelect = document.getElementById('aiModelSelect');
+        if (modelSelect) {
+          modelSelect.value = 'gemma-3-27b-it';
+        }
+
+        // 3. 진행 상태 초기화
+        const progressContainer = document.getElementById('smartProgress');
+        if (progressContainer) {
+          progressContainer.style.display = 'none';
+        }
+
+        // 진행 단계 초기화
+        for (let i = 1; i <= 6; i++) {
+          const step = document.getElementById(`step${i}`);
+          if (step) {
+            step.className = 'step';
+          }
+        }
+
+        // 진행 상세 로그 초기화
+        const progressDetails = document.getElementById('progressDetails');
+        if (progressDetails) {
+          progressDetails.innerHTML = '';
+        }
+
+        // 4. 결과 영역 초기화
+        const resultContainer = document.getElementById('smartResult');
+        if (resultContainer) {
+          resultContainer.style.display = 'none';
+        }
+
+        const scriptElement = document.getElementById('smartGeneratedScript');
+        if (scriptElement) {
+          scriptElement.textContent = '';
+        }
+
+        // 5. 품질 평가 영역 초기화
+        const scoreDisplay = document.getElementById('smartScriptScore');
+        const placeholder = document.getElementById('qualityPlaceholder');
+
+        if (scoreDisplay && placeholder) {
+          scoreDisplay.style.display = 'none';
+          placeholder.style.display = 'block';
+        }
+
+        // 6. 버튼 상태 초기화
+        const generateBtn = document.querySelector('.smart-generate-btn');
+        if (generateBtn) {
+          generateBtn.disabled = false;
+          generateBtn.innerHTML = '🧠 스마트 분석 시작';
+        }
+
+        // 7. 전역 변수 초기화
+        window.smartGeneratedScript = null;
+        if (window.gemmaEngine) {
+          window.gemmaEngine.lastEvaluation = null;
+        }
+        if (window.geminiFlashEngine) {
+          window.geminiFlashEngine.lastEvaluation = null;
+        }
+
+        console.log('✅ 스마트 매핑 초기화 완료');
+
+        // 성공 메시지 표시 (선택적)
+        const resetBtn = document.getElementById('smartResetBtn');
+        if (resetBtn) {
+          const originalText = resetBtn.innerHTML;
+          resetBtn.innerHTML = '✅ 초기화됨';
+          resetBtn.disabled = true;
+
+          setTimeout(() => {
+            resetBtn.innerHTML = originalText;
+            resetBtn.disabled = false;
+          }, 1500);
+        }
+
+      } catch (error) {
+        console.error('❌ 초기화 실패:', error);
+        alert('초기화 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+
+    // 초기화 버튼 이벤트 리스너 등록
+    document.addEventListener('DOMContentLoaded', function () {
+      const resetBtn = document.getElementById('smartResetBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', resetSmartMapping);
+        console.log('✅ 스마트 매핑 초기화 버튼 이벤트 등록 완료');
+      }
+    });
+
+    // 전역 함수로도 등록 (호출 편의성)
+    window.resetSmartMapping = resetSmartMapping;
   </script>
 </body>
 
