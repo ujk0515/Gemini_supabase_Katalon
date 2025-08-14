@@ -9,6 +9,7 @@ class GemmaEngine {
         this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent';
         this.analysisResults = {};
         this.currentStep = 0;
+        this.lastEvaluation = null; // 마지막 평가 결과 저장
     }
 
     getBaseUrl() {
@@ -319,36 +320,254 @@ ${script}
 
                     if (jsonStart !== -1 && jsonEnd !== -1) {
                         const jsonText = cleanedResult.substring(jsonStart, jsonEnd + 1);
-                        return JSON.parse(jsonText);
+                        const evaluation = JSON.parse(jsonText);
+                        this.lastEvaluation = evaluation; // 평가 결과 저장
+                        return evaluation;
                     }
                 } catch (parseError) {
                     console.warn('AI 평가 JSON 파싱 실패:', parseError);
                 }
             } else if (typeof result === 'object') {
+                this.lastEvaluation = result; // 평가 결과 저장
                 return result;
             }
 
             // Fallback: 기본 응답
-            return {
+            const fallbackEvaluation = {
                 score: 75,
                 grade: "보통",
                 issues: ["AI 평가 파싱 실패"],
                 strengths: ["기본 구조 양호"],
                 recommendation: "수동 검토 필요"
             };
+            this.lastEvaluation = fallbackEvaluation;
+            return fallbackEvaluation;
 
         } catch (error) {
             console.error('❌ AI 평가 실패:', error);
 
             // 에러 발생 시 기본 평가
-            return {
+            const errorEvaluation = {
                 score: 70,
                 grade: "평가불가",
                 issues: ["AI 평가 시스템 오류"],
                 strengths: ["코드 생성 완료"],
                 recommendation: "네트워크 연결 확인 후 재시도"
             };
+            this.lastEvaluation = errorEvaluation;
+            return errorEvaluation;
         }
+    }
+
+    /**
+     * AI 기반 스크립트 개선 함수
+     */
+    async improveScriptBasedOnEvaluation(originalScript, evaluation) {
+        console.log('🛠️ AI 검토 반영 시작...');
+        
+        const prompt = `기존 Katalon Groovy 스크립트를 AI 평가 결과를 바탕으로 점진적으로 개선해주세요.
+
+=== 기존 스크립트 ===
+${originalScript}
+
+=== AI 평가 결과 ===
+개선사항: ${JSON.stringify(evaluation.issues)}
+권장사항: ${evaluation.recommendation}
+현재 점수: ${evaluation.score}점
+
+=== 개선 지침 ===
+1. **최소 변경 원칙**: 기존 스크립트의 핵심 로직과 구조를 최대한 유지
+2. **선별적 적용**: 개선사항 중 실제 필요한 부분만 적용
+3. **안전성 우선**: 스크립트 동작에 영향을 줄 수 있는 과도한 변경 금지
+4. **표준 준수**: Katalon WebUI 표준 및 기존 코딩 스타일 유지
+
+=== 개선 우선순위 ===
+1. **높음**: 문법 오류, 잘못된 함수 사용, 보안 문제
+2. **중간**: 불필요한 코드 제거, 대기 로직 최적화
+3. **낮음**: 주석 정리, 변수명 개선
+
+=== 금지사항 ===
+- 전체 스크립트 재작성 금지
+- 핵심 테스트 로직 변경 금지
+- 새로운 기능 추가 금지
+- Object Repository 경로 대폭 변경 금지
+
+=== 출력 형식 ===
+개선된 Groovy 스크립트만 반환하세요. 설명이나 마크다운 블록 없이 순수 코드만 출력하세요.
+
+개선 후 예상 점수: ${Math.min(100, evaluation.score + 10)}점 이상`;
+
+        try {
+            const result = await this.callGemini(prompt);
+            
+            // 코드 블록 마크다운 제거
+            let improvedScript = result;
+            if (typeof result === 'string') {
+                improvedScript = result
+                    .replace(/^```groovy\s*/g, '')
+                    .replace(/```\s*$/g, '')
+                    .trim();
+            }
+            
+            console.log('✅ 스크립트 개선 완료');
+            return improvedScript;
+        } catch (error) {
+            console.error('❌ 스크립트 개선 실패:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 스크립트 개선 및 재평가 전체 프로세스
+     */
+    async improveAndReEvaluateScript() {
+        if (!window.smartGeneratedScript) {
+            alert('개선할 스크립트가 없습니다.');
+            return;
+        }
+
+        if (!this.lastEvaluation) {
+            alert('먼저 스크립트 품질 평가가 완료되어야 합니다.');
+            return;
+        }
+
+        const improveButton = document.querySelector('.improve-script-btn');
+        if (improveButton) {
+            improveButton.disabled = true;
+            improveButton.innerHTML = '<span class="smart-loading"></span>🛠️ 개선 중...';
+        }
+
+        // 품질 평가 영역에 로딩 표시
+        this.showImprovementLoading();
+
+        try {
+            console.log('🚀 스크립트 개선 프로세스 시작');
+            
+            // 1. 스크립트 개선
+            const improvedScript = await this.improveScriptBasedOnEvaluation(
+                window.smartGeneratedScript, 
+                this.lastEvaluation
+            );
+            
+            // 2. 개선된 스크립트를 화면에 표시
+            document.getElementById('smartGeneratedScript').textContent = improvedScript;
+            window.smartGeneratedScript = improvedScript;
+            
+            console.log('🔄 개선된 스크립트로 재평가 시작');
+            
+            // 3. 재평가 실행
+            const newEvaluation = await this.evaluateScriptQuality(improvedScript);
+            
+            // 4. 새로운 평가 결과를 화면에 표시 (개선 전후 비교 포함)
+            await this.displayScriptScoreWithComparison(improvedScript, this.lastEvaluation, newEvaluation);
+            
+            // 5. 새로운 평가를 현재 평가로 업데이트
+            this.lastEvaluation = newEvaluation;
+            
+            console.log('🎉 스크립트 개선 및 재평가 완료');
+            
+        } catch (error) {
+            console.error('❌ 스크립트 개선 실패:', error);
+            alert('스크립트 개선 중 오류가 발생했습니다: ' + error.message);
+            
+            // 에러 시 품질 평가 영역 복구
+            this.showImprovementError();
+            
+        } finally {
+            if (improveButton) {
+                improveButton.disabled = false;
+                improveButton.innerHTML = '🛠️ AI 검토 반영';
+            }
+        }
+    }
+
+    /**
+     * 개선 중 로딩 표시
+     */
+    showImprovementLoading() {
+        const circle = document.getElementById('scoreCircleLarge');
+        const value = document.getElementById('scoreValueLarge');
+        const details = document.getElementById('scoreDetailsLarge');
+
+        if (circle && value && details) {
+            value.textContent = '...';
+            circle.className = 'score-circle-large score-waiting';
+            details.textContent = '🛠️ AI가 스크립트를 개선하고\n재평가하는 중입니다...\n잠시만 기다려주세요';
+        }
+    }
+
+    /**
+     * 개선 에러 표시
+     */
+    showImprovementError() {
+        const circle = document.getElementById('scoreCircleLarge');
+        const value = document.getElementById('scoreValueLarge');
+        const details = document.getElementById('scoreDetailsLarge');
+
+        if (circle && value && details) {
+            value.textContent = '❌';
+            circle.className = 'score-circle-large score-poor';
+            details.textContent = '❌ 스크립트 개선 실패\n네트워크를 확인하고\n다시 시도해주세요';
+        }
+    }
+
+    /**
+     * 개선 전후 비교를 포함한 품질 평가 표시
+     */
+    async displayScriptScoreWithComparison(script, oldEvaluation, newEvaluation) {
+        const scoreDisplay = document.getElementById('smartScriptScore');
+        const circle = document.getElementById('scoreCircleLarge');
+        const value = document.getElementById('scoreValueLarge');
+        const details = document.getElementById('scoreDetailsLarge');
+        const placeholder = document.getElementById('qualityPlaceholder');
+
+        if (!scoreDisplay || !circle || !value || !details) return;
+
+        // 품질 평가 영역 표시, 플레이스홀더 숨김
+        scoreDisplay.style.display = 'flex';
+        if (placeholder) placeholder.style.display = 'none';
+
+        // 점수에 따른 등급 및 색상 결정
+        let className;
+        if (newEvaluation.score >= 90) {
+            className = 'score-excellent';
+        } else if (newEvaluation.score >= 80) {
+            className = 'score-good';
+        } else if (newEvaluation.score >= 70) {
+            className = 'score-fair';
+        } else {
+            className = 'score-poor';
+        }
+
+        // UI 업데이트 (점수 변화 애니메이션)
+        value.textContent = newEvaluation.score;
+        circle.className = `score-circle-large ${className}`;
+
+        // 개선 전후 비교 정보 구성
+        const scoreDiff = newEvaluation.score - oldEvaluation.score;
+        const improvementText = scoreDiff > 0 ? 
+            `🔼 +${scoreDiff}점 개선` : 
+            scoreDiff < 0 ? 
+                `🔻 ${scoreDiff}점 하락` : 
+                '🔄 점수 동일';
+
+        let detailText = `등급: ${newEvaluation.grade} (${oldEvaluation.score}점 → ${newEvaluation.score}점)\n${improvementText}`;
+
+        if (newEvaluation.strengths && newEvaluation.strengths.length > 0) {
+            detailText += `\n\n✅ 잘된 부분:\n• ${newEvaluation.strengths.join('\n• ')}`;
+        }
+
+        if (newEvaluation.issues && newEvaluation.issues.length > 0) {
+            detailText += `\n\n⚠️ 남은 개선사항:\n• ${newEvaluation.issues.join('\n• ')}`;
+        }
+
+        if (newEvaluation.recommendation) {
+            detailText += `\n\n💡 추가 권장사항:\n${newEvaluation.recommendation}`;
+        }
+
+        details.textContent = detailText;
+
+        console.log(`🤖 재평가 결과: ${oldEvaluation.score}점 → ${newEvaluation.score}점 (${improvementText})`);
     }
 
     /**
@@ -652,7 +871,16 @@ function downloadSmartScript() {
     }
 }
 
-console.log('✅ AI 엔진 Gemma-3-27b-it 버전 로드 완료 (점수 표시 기능 포함)');
+// 새로운 함수: AI 검토 반영
+function improveSmartScript() {
+    if (window.gemmaEngine) {
+        window.gemmaEngine.improveAndReEvaluateScript();
+    } else {
+        alert('AI 엔진을 찾을 수 없습니다.');
+    }
+}
+
+console.log('✅ AI 엔진 Gemma-3-27b-it 버전 로드 완료 (AI 검토 반영 기능 포함)');
 
 // 전역 변수 생성을 확실히 하기
 console.log('✅ GemmaEngine 클래스 로드 완료');

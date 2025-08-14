@@ -382,6 +382,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
             <div class="script-actions">
               <button onclick="copySmartScript()">📋 복사</button>
               <button onclick="downloadSmartScript()">⬇️ 다운로드</button>
+              <button class="improve-script-btn" onclick="improveSmartScript()">🛠️ AI 검토 반영</button>
             </div>
             <pre id="smartGeneratedScript"></pre>
           </div>
@@ -559,10 +560,40 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     async function startSmartMapping() {
         const selectedModel = document.getElementById('aiModelSelect').value;
         
+        // 엔진 존재 확인 및 생성
         if (selectedModel === 'gemma-3-27b-it') {
+            if (!window.gemmaEngine) {
+                console.log('Gemma 엔진 생성 중...');
+                window.gemmaEngine = new GemmaEngine();
+            }
             await startSmartMappingGemma();
         } else if (selectedModel === 'gemini-2.0-flash') {
+            if (!window.geminiFlashEngine) {
+                console.log('Gemini Flash 엔진 생성 중...');
+                window.geminiFlashEngine = new GeminiFlashEngine();
+            }
             await startSmartMappingGemini();
+        }
+    }
+
+        // AI 검토 반영 함수 (모델별 분기)
+    function improveSmartScript() {
+        const selectedModel = document.getElementById('aiModelSelect').value;
+        
+        if (selectedModel === 'gemma-3-27b-it') {
+            if (window.gemmaEngine) {
+                window.gemmaEngine.improveAndReEvaluateScript();
+            } else {
+                alert('Gemma AI 엔진을 찾을 수 없습니다.');
+            }
+        } else if (selectedModel === 'gemini-2.0-flash') {
+            if (window.geminiFlashEngine) {
+                window.geminiFlashEngine.improveAndReEvaluateScript();
+            } else {
+                alert('Gemini Flash AI 엔진을 찾을 수 없습니다.');
+            }
+        } else {
+            alert('지원되지 않는 AI 모델입니다.');
         }
     }
   </script>
