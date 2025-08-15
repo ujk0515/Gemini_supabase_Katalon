@@ -9,7 +9,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- External CSS -->
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/csv.css">
+  <link rel="stylesheet" href="assets/css/groovy.css">
+  <link rel="stylesheet" href="assets/css/report.css">
+  <link rel="stylesheet" href="assets/css/mapping.css">
+  <link rel="stylesheet" href="assets/css/tcmerger.css">
+  <link rel="stylesheet" href="assets/css/smart.css">
+  
 
   <!-- External Libraries -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
@@ -21,6 +28,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <script src="assets/js/katalon-object-generator.js"></script>
+  <script src="assets/js/object-spy-controller.js"></script>
   <style>
     button.tab-button:disabled {
       opacity: 0.6;
@@ -39,6 +48,7 @@
     <button class="tab-button" data-tab="mapping" disabled>🔄 테스트케이스 매핑</button>
     <button class="tab-button" data-tab="tcmerger" disabled>📦 TC 병합/분리</button>
     <button class="tab-button" data-tab="smart">🧠 스마트 매핑</button>
+    
   </header>
 
   <main>
@@ -392,6 +402,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       </div>
     </div>
 
+    
 
   </main>
 
@@ -427,7 +438,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     console.log('✅ 인라인 수파베이스 함수 등록 완료');
   </script>
 
-  <!-- 2. 기존 라이브러리들 -->
+  <!-- 기존 라이브러리들 -->
   <script src="libs/common_utils_zip.js"></script>
   <script src="libs/csv_parser_zip.js"></script>
   <script src="libs/groovy_converter_zip.js"></script>
@@ -435,7 +446,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
   <script src="libs/script.js"></script>
   <script src="libs/gemini-keywords.js"></script>
 
-  <!-- 3. 테스트케이스 매핑 모듈들 (수파베이스 버전) -->
+  <!-- 테스트케이스 매핑 모듈들 -->
   <script src="libs/testcase_mapping/testcase_parser.js"></script>
   <script src="libs/testcase_mapping/katalon_mapper.js"></script>
   <script src="libs/testcase_mapping/testcase_ui_controller.js"></script>
@@ -443,10 +454,12 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
   <script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
   <script src="libs/ai_engine_gemini-2.0-flash.js"></script>
 
-  <!-- 4. 애플리케이션 메인 스크립트들 -->
-  <script src="js/ui-utils.js"></script>
-  <script src="js/file-handlers.js"></script>
-  <script src="js/main.js"></script>
+  
+
+  <!-- 애플리케이션 메인 스크립트들 -->
+  <script src="assets/js/ui-utils.js"></script>
+  <script src="assets/js/file-handlers.js"></script>
+  <script src="assets/js/main.js"></script>
 
   <script>
     // 수정된 코드 (안전한 탭 전환)

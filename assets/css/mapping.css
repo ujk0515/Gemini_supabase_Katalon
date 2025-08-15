@@ -1,0 +1,513 @@
+/* 테스트케이스 매핑 탭 기존 스타일 유지 */
+#mapping .tab-content {
+  padding: 0;
+}
+
+.mapping-container {
+  display: flex;
+  height: calc(100vh - 80px);
+  min-height: 1000px;
+  gap: 1px;
+  background: #e2e8f0;
+}
+
+.panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.left-panel {
+  flex: 1;
+  max-width: 1000px;
+}
+
+.center-panel {
+  flex: 1.2;
+}
+
+.right-panel {
+  flex: 1.2;
+}
+
+.panel-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reset-btn {
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.panel-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.input-section {
+  margin-bottom: 20px;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.input-box {
+  width: 100%;
+  min-height: 300px;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #fafafa;
+}
+
+.extract-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.parsed-section {
+  margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.section-header {
+  background: #f8fafc;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.section-content {
+  padding: 16px;
+  background: white;
+  min-height: 80px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.convert-btn {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.convert-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.script-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  height: calc(100% - 20px);
+  min-height: 900px;
+}
+
+.script-header {
+  background: #f1f5f9;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.script-content {
+  padding: 16px;
+  background: #fafafa;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #374151;
+  height: calc(100% - 50px);
+  min-height: 850px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.mapping-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.no-mapping {
+  background: #ef4444;
+}
+
+.copy-btn {
+  margin-left: auto;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.placeholder-text {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Steps 섹션 특별 스타일 - 기존 styles.css에 추가할 부분 */
+
+/* Steps 섹션 구분을 위한 특별 스타일 */
+.steps-section .section-header {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0369a1;
+  border-bottom: 1px solid #bae6fd;
+  font-weight: 700;
+}
+
+.steps-section .section-content {
+  background: linear-gradient(135deg, #fafbff 0%, #f8fafc 100%);
+  border-left: 3px solid #0ea5e9;
+}
+
+/* Steps 섹션 hover 효과 */
+.steps-section:hover .section-header {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  color: #0c4a6e;
+}
+
+.steps-section:hover .section-content {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-left-color: #0284c7;
+}
+
+/* Steps 아이콘 애니메이션 */
+.steps-section .section-header::before {
+  content: '🔢';
+  display: inline-block;
+  margin-right: 8px;
+  animation: stepsPulse 2s infinite;
+}
+
+@keyframes stepsPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Steps 섹션 내 텍스트 스타일링 */
+.steps-section .section-content {
+  font-family: 'Segoe UI', sans-serif;
+  line-height: 1.6;
+}
+
+/* Steps 목록 번호 스타일링 */
+.steps-section .section-content br+* {
+  margin-top: 8px;
+}
+
+/* Steps 플레이스홀더 텍스트 특별 색상 */
+.steps-section .placeholder-text {
+  color: #0ea5e9;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* 반응형: 모바일에서 Steps 섹션 */
+@media (max-width: 768px) {
+  .steps-section .section-header {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .steps-section .section-content {
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 50px;
+  }
+}
+
+/* 스크립트 결과 스타일링 - 추가 */
+
+/* 1. No mapping found 라인 - 빨간색 */
+.no-mapping-line {
+  color: #dc2626;
+  background-color: rgba(220, 38, 38, 0.1);
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: inline-block;
+  width: 100%;
+}
+
+/* 2. Keywords extracted 라인 - 주황색 */
+.keywords-line {
+  color: #ea580c;
+  background-color: rgba(234, 88, 12, 0.1);
+  font-style: italic;
+  padding: 1px 4px;
+  border-radius: 3px;
+  display: inline-block;
+  width: 100%;
+}
+
+/* 3. WebUI 매핑 코드 라인 - 볼드 검은색 */
+.mapped-code-line {
+  color: #1f2937;
+  font-weight: 700;
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  border-left: 3px solid #10b981;
+  display: inline-block;
+  width: 100%;
+  margin: 1px 0;
+}
+
+/* 4. Action detected 라인 - 녹색 */
+.action-detected-line {
+  color: #059669;
+  font-weight: 600;
+  background-color: rgba(5, 150, 105, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: inline-block;
+  width: 100%;
+}
+
+/* 5. 섹션 헤더 라인 - 파란색 */
+.section-header-line {
+  color: #2563eb;
+  font-weight: 700;
+  background-color: rgba(37, 99, 235, 0.1);
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  display: inline-block;
+  width: 100%;
+  margin: 8px 0 4px 0;
+}
+
+/* 6. 일반 주석 라인 - 회색 */
+.comment-line {
+  color: #6b7280;
+  font-style: italic;
+  padding: 1px 0;
+  display: inline-block;
+  width: 100%;
+}
+
+/* 7. 기타 라인 - 기본 색상 */
+.default-line {
+  color: #374151;
+  padding: 1px 0;
+  display: inline-block;
+  width: 100%;
+}
+
+/* 호버 효과 */
+.mapped-code-line:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+  border-left-color: #059669;
+}
+
+.no-mapping-line:hover {
+  background-color: rgba(220, 38, 38, 0.2);
+}
+
+.action-detected-line:hover {
+  background-color: rgba(5, 150, 105, 0.2);
+}
+
+/* 애니메이션 효과 */
+.mapped-code-line,
+.no-mapping-line,
+.action-detected-line {
+  transition: all 0.2s ease;
+}
+
+/* 수파베이스 연동 관련 스타일 추가 */
+/* assets/css/styles.css 파일 끝에 추가하세요 */
+
+/* 수파베이스 매핑 인디케이터 */
+.supabase-mapping {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.supabase-mapping::before {
+  content: "🗄️";
+}
+
+/* 로딩 상태 스타일 */
+.loading {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 수파베이스 연결 상태 표시 */
+.connection-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.connection-status.connected {
+  color: #065f46;
+  border-left: 3px solid #10b981;
+}
+
+.connection-status.disconnected {
+  color: #dc2626;
+  border-left: 3px solid #ef4444;
+}
+
+/* 스크립트 결과 스타일링 강화 */
+.script-content pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 20px;
+  border-radius: 8px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: auto;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* 매핑 성공/실패 하이라이트 */
+.mapping-success {
+  background: rgba(16, 185, 129, 0.1);
+  border-left: 3px solid #10b981;
+  padding: 2px 6px;
+  margin: 2px 0;
+}
+
+.mapping-failed {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid #ef4444;
+  padding: 2px 6px;
+  margin: 2px 0;
+}
+
+/* 버튼 로딩 상태 */
+.convert-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.convert-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 알림 메시지 스타일 */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  min-width: 300px;
+  max-width: 400px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #065f46;
+}
+
+.notification.error {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #991b1b;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

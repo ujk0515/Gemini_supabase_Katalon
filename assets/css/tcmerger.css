@@ -1,0 +1,152 @@
+/* TC 병합/분리 헤더 스타일 */
+.tcmerger-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.tcmerger-header h2 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.tcmerger-header p {
+  color: #6b7280;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* TC Merger 탭 전용 스타일 */
+.tcmerger-tab-btn {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #e9ecef;
+  color: #6c757d;
+}
+
+.tcmerger-tab-btn.active {
+  background-color: #007bff;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.tcmerger-tab-btn:hover:not(.active) {
+  background-color: #dee2e6;
+  transform: translateY(-1px);
+}
+
+.tcmerger-tab-content {
+  display: none;
+}
+
+.tcmerger-tab-content.active {
+  display: block;
+  animation: fadeInUp 0.3s ease-in;
+}
+
+.tab-description {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  border-left: 5px solid #2196f3;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.file-info {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+  display: none;
+}
+
+.cleaning-info {
+  background-color: #e8f5e8;
+  border-left: 4px solid #4caf50;
+  display: none;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+  font-size: 18px;
+}
+
+.empty-state .icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 테이블 스타일 (TC Merger용) */
+.tcmerger-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 25px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tcmerger-table th,
+.tcmerger-table td {
+  border: 1px solid #dee2e6;
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tcmerger-table th {
+  background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+  color: white;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tcmerger-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.tcmerger-table tr:hover {
+  background-color: #e9ecef;
+}
+
+.warning-message {
+  color: #dc3545;
+  padding: 20px;
+  text-align: center;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-size: 16px;
+}

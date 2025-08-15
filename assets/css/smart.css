@@ -1,0 +1,429 @@
+/* 기존 styles.css 파일에서 스마트 매핑 관련 부분만 수정 */
+
+/* 스마트 매핑 탭 - 2단 레이아웃 (기존 유지) */
+#smart .tab-content {
+  padding: 0;
+}
+
+.smart-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.smart-header {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.smart-header h2 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 28px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.smart-header p {
+  color: #6b7280;
+  font-size: 16px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.smart-progress-container {
+  background: #f8fafc;
+  padding: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.progress-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto 25px auto;
+}
+
+.step {
+  padding: 12px 15px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-color: #3b82f6;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.step.completed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-color: #10b981;
+}
+
+.progress-details {
+  background: #1f2937;
+  color: #10b981;
+  border-radius: 8px;
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  min-height: 100px;
+  overflow-y: auto;
+  max-height: 150px;
+  white-space: pre-wrap;
+}
+
+.smart-main-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* 좌측 입력 섹션 - 세로 2분할로 수정 */
+.smart-input-section {
+  padding: 24px;
+  border-right: 1px solid #e5e7eb;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 상단: TC 입력 영역 (높이 50%로 줄임) */
+.smart-input-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.smart-input-section h3 {
+  color: #374151;
+  margin-bottom: 16px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.smart-input-box {
+  flex: 1;
+  min-height: 180px;
+  /* 기존보다 줄임 */
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  font-family: 'Segoe UI', sans-serif;
+  background: white;
+  margin-bottom: 16px;
+  transition: border-color 0.3s;
+}
+
+.smart-input-box:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.smart-generate-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.smart-generate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.smart-generate-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 하단: 스크립트 품질 평가 영역 (새로 추가) */
+.smart-quality-section {
+  flex: 1;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.smart-quality-section h3 {
+  color: #374151;
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.quality-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.script-score-display {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+}
+
+.score-circle-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.score-circle-large span {
+  text-align: center;
+  line-height: 1.2;
+}
+
+.score-excellent {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.score-good {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.score-fair {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.score-poor {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.score-waiting {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.score-details-large {
+  flex: 1;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+  white-space: pre-line;
+  overflow-y: auto;
+  text-align: left;
+  padding: 0 8px;
+  max-height: 300px;
+}
+
+.quality-placeholder {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* 우측 결과 영역 (기존 유지) */
+.smart-result-container {
+  padding: 32px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.smart-result-container h3 {
+  color: #374151;
+  margin-bottom: 20px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.script-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.script-actions button {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.script-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+#smartGeneratedScript {
+  flex: 1;
+  background: #1f2937;
+  color: #e2e8f0;
+  padding: 20px;
+  border-radius: 12px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  border: 1px solid #374151;
+  margin: 0;
+}
+
+.smart-loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff30;
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: smartSpin 1s ease-in-out infinite;
+}
+
+@keyframes smartSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 반응형 (기존 유지) */
+@media (max-width: 1200px) {
+  .progress-steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .smart-main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .smart-input-section {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    max-height: 50vh;
+  }
+
+  .progress-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .smart-header h2 {
+    font-size: 20px;
+  }
+
+  .smart-input-top,
+  .smart-quality-section {
+    flex: none;
+    min-height: 150px;
+  }
+
+  .score-circle-large {
+    width: 80px;
+    height: 80%;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+}
+
+.input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ai-model-dropdown {
+  padding: 8px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* 헤더 컨트롤 그룹 */
+.header-controls {
+    display: flex;
+    gap: 8px; /* 12px에서 8px로 줄임 */
+    align-items: center;
+    margin-right: auto; /* 추가: 오른쪽 여백 자동 */
+}
+
+/* 초기화 버튼 스타일 */
+.smart-reset-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.smart-reset-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.smart-reset-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

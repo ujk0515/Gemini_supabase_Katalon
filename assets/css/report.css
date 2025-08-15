@@ -1,0 +1,59 @@
+/* Report 뷰어 탭 스타일 */
+.report-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.report-header h2 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.report-viewer {
+  display: flex;
+  gap: 20px;
+  height: 70vh;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.report-preview {
+  flex: 1;
+  border: none;
+  background: #f8fafc;
+}
+
+.report-result {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-left: 1px solid #e5e7eb;
+}
+
+.report-result h2 {
+  color: #6b7280;
+  text-align: center;
+  margin-top: 50px;
+  font-size: 24px;
+}
+
+/* 차트 스타일 개선 */
+#reportChart {
+  width: 500px !important;
+  height: 500px !important;
+  display: block;
+  margin: 20px auto;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
