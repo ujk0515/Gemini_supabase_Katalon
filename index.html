@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="assets/css/mapping.css">
   <link rel="stylesheet" href="assets/css/tcmerger.css">
   <link rel="stylesheet" href="assets/css/smart.css">
-  
+
 
   <!-- External Libraries -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
@@ -48,7 +48,7 @@
     <button class="tab-button" data-tab="mapping" disabled>🔄 테스트케이스 매핑</button>
     <button class="tab-button" data-tab="tcmerger" disabled>📦 TC 병합/분리</button>
     <button class="tab-button" data-tab="smart">🧠 스마트 매핑</button>
-    
+    <button class="tab-button" data-tab="object-generator">✨ Object 생성</button>
   </header>
 
   <main>
@@ -402,7 +402,181 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       </div>
     </div>
 
-    
+
+
+    <!-- Object Generator 탭 -->
+    <div id="object-generator" class="tab-content">
+      <style>
+        .generator-container {
+          display: flex;
+          gap: 20px;
+          padding: 20px;
+          height: calc(100vh - 120px);
+        }
+
+        .generator-panel {
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          padding: 25px;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .left-panel {
+          flex: 0 0 450px;
+          overflow-y: auto;
+        }
+
+        .right-panel {
+          flex: 1;
+          overflow-y: auto;
+        }
+
+        .panel-header {
+          font-size: 1.3em;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 25px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .input-group {
+          margin-bottom: 20px;
+        }
+
+        .input-group label {
+          display: block;
+          font-weight: 500;
+          color: #555;
+          margin-bottom: 8px;
+        }
+
+        .input-group .help-text {
+          font-size: 0.8em;
+          color: #777;
+          margin-left: 8px;
+        }
+
+        .input-group input {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          font-size: 0.95em;
+          box-sizing: border-box;
+        }
+
+        .add-btn {
+          width: 100%;
+          padding: 12px;
+          font-size: 1.1em;
+          font-weight: 600;
+          background: linear-gradient(135deg, #562ceb 0%, #4527a0 100%);
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+
+        .add-btn:hover {
+          opacity: 0.9;
+        }
+
+        .object-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .object-list-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 15px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        .object-list-item:last-child {
+          border-bottom: none;
+        }
+
+        .object-name {
+          font-weight: 500;
+        }
+
+        .object-actions button {
+          margin-left: 10px;
+          padding: 5px 10px;
+          border: 1px solid #ccc;
+          background: #f9f9f9;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+
+        .export-all-btn {
+          margin-top: auto;
+          /* Push to bottom */
+          padding: 12px;
+          font-size: 1.1em;
+          background: #10b981;
+          color: white;
+        }
+      </style>
+      <div class="generator-container">
+        <div class="generator-panel left-panel">
+          <div class="panel-header">오브젝트 속성 입력</div>
+
+          <div class="input-group">
+            <label for="obj_name">Object Name <span class="help-text">(.rs 파일 이름)</span></label>
+            <input type="text" id="obj_name" placeholder="예: btn_login">
+          </div>
+
+          <h4 style="margin-top: 20px; margin-bottom: 10px; color: #444;">Selectors</h4>
+
+          <div class="input-group">
+            <label for="obj_xpath">XPath <span class="help-text">DevTools > 우클릭 > Copy > Copy full XPath</span></label>
+            <input type="text" id="obj_xpath" placeholder="//button[@id='login']">
+          </div>
+          <div class="input-group">
+            <label for="obj_css">CSS Selector <span class="help-text">DevTools > 우클릭 > Copy > Copy
+                selector</span></label>
+            <input type="text" id="obj_css" placeholder="#login">
+          </div>
+          <div class="input-group">
+            <label for="obj_id">ID <span class="help-text">DevTools > Elements 탭에서 id 속성 값</span></label>
+            <input type="text" id="obj_id" placeholder="login">
+          </div>
+          <div class="input-group">
+            <label for="obj_name_attr">Name <span class="help-text">DevTools > Elements 탭에서 name 속성 값</span></label>
+            <input type="text" id="obj_name_attr" placeholder="login_button">
+          </div>
+
+          <h4 style="margin-top: 20px; margin-bottom: 10px; color: #444;">Other Properties</h4>
+
+          <div class="input-group">
+            <label for="obj_tag">Tag Name <span class="help-text">예: button, input, div</span></label>
+            <input type="text" id="obj_tag" placeholder="button">
+          </div>
+          <div class="input-group">
+            <label for="obj_text">Text <span class="help-text">요소가 포함하는 텍스트</span></label>
+            <input type="text" id="obj_text" placeholder="Log In">
+          </div>
+
+          <button id="addObjectBtn" class="add-btn">[+] 목록에 추가하기</button>
+        </div>
+        <div class="generator-panel right-panel">
+          <div class="panel-header">생성된 오브젝트 목록</div>
+          <ul id="generatedObjectList" class="object-list">
+            <!-- 생성된 오브젝트가 여기에 추가됩니다 -->
+            <li style="text-align: center; color: #888; padding: 50px 0;">목록이 비어있습니다.</li>
+          </ul>
+          <button id="exportAllBtn" class="add-btn export-all-btn" disabled>[📦] Export All as ZIP</button>
+        </div>
+      </div>
+    </div>
 
   </main>
 
@@ -451,10 +625,16 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
   <script src="libs/testcase_mapping/katalon_mapper.js"></script>
   <script src="libs/testcase_mapping/testcase_ui_controller.js"></script>
   <script src="libs/testcase_mapping/testcase_mapper_supabase.js"></script>
+  <!-- Prompt JS Files -->
+  <script src="libs/prompts/gemma_step1_analyze.js"></script>
+  <script src="libs/prompts/gemma_step2_map_actions.js"></script>
+  <script src="libs/prompts/gemma_step3_generate_script.js"></script>
+  <script src="libs/prompts/gemma_step4_evaluate.js"></script>
+  <script src="libs/prompts/gemma_step5_improve.js"></script>
   <script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
   <script src="libs/ai_engine_gemini-2.0-flash.js"></script>
 
-  
+
 
   <!-- 애플리케이션 메인 스크립트들 -->
   <script src="assets/js/ui-utils.js"></script>
@@ -577,14 +757,29 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
 
       // 엔진 존재 확인 및 생성
       if (selectedModel === 'gemma-3-27b-it') {
+        // GemmaEngine 클래스 확인
+        if (typeof GemmaEngine === 'undefined') {
+          alert('❌ AI 엔진이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+          return;
+        }
+
+        // 인스턴스 확인 및 생성
         if (!window.gemmaEngine) {
-          console.log('Gemma 엔진 생성 중...');
+          console.log('🔧 Gemma 엔진 생성 중...');
           window.gemmaEngine = new GemmaEngine();
         }
         await startSmartMappingGemma();
+
       } else if (selectedModel === 'gemini-2.0-flash') {
+        // GeminiFlashEngine 클래스 확인
+        if (typeof GeminiFlashEngine === 'undefined') {
+          alert('❌ AI 엔진이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+          return;
+        }
+
+        // 인스턴스 확인 및 생성
         if (!window.geminiFlashEngine) {
-          console.log('Gemini Flash 엔진 생성 중...');
+          console.log('🔧 Gemini Flash 엔진 생성 중...');
           window.geminiFlashEngine = new GeminiFlashEngine();
         }
         await startSmartMappingGemini();
