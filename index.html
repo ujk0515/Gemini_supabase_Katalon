@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="assets/css/mapping.css">
   <link rel="stylesheet" href="assets/css/tcmerger.css">
   <link rel="stylesheet" href="assets/css/smart.css">
-
+  <link rel="stylesheet" href="assets/css/objectspy.css">
 
   <!-- External Libraries -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
@@ -48,7 +48,7 @@
     <button class="tab-button" data-tab="mapping" disabled>🔄 테스트케이스 매핑</button>
     <button class="tab-button" data-tab="tcmerger" disabled>📦 TC 병합/분리</button>
     <button class="tab-button" data-tab="smart">🧠 스마트 매핑</button>
-    <button class="tab-button" data-tab="object-generator">✨ Object 생성</button>
+    <button class="tab-button" data-tab="object-spy">🔍 Object Spy</button>
   </header>
 
   <main>
@@ -336,15 +336,17 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           <p>Gemini AI가 인간처럼 생각하여 테스트케이스를 분석하고 최적의 Katalon 스크립트를 생성합니다</p>
         </div>
 
-        <!-- 6단계 진행바를 상단으로 -->
+        <!-- 8단계 진행바로 수정 -->
         <div id="smartProgress" class="smart-progress-container" style="display: none;">
           <div class="progress-steps">
             <div class="step" id="step1">1. Summary 이해</div>
             <div class="step" id="step2">2. TC 조건 파악</div>
             <div class="step" id="step3">3. 환경 구성 검증</div>
             <div class="step" id="step4">4. 스텝 동작 매핑</div>
-            <div class="step" id="step5">5. 조건 충돌 검증</div>
-            <div class="step" id="step6">6. 결과 수렴 검증</div>
+            <div class="step" id="step5">5. 설계도 작성</div>
+            <div class="step" id="step6">6. 코드 생성</div>
+            <div class="step" id="step7">7. 조건 충돌 검증</div>
+            <div class="step" id="step8">8. 결과 수렴 검증</div>
           </div>
           <div class="progress-details" id="progressDetails"></div>
         </div>
@@ -402,186 +404,217 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       </div>
     </div>
 
+    <!-- Object Spy 탭 -->
+    <div id="object-spy" class="tab-content">
+        <div class="spy-container">
+            <!-- 좌측 패널: 기본 정보 + Selector 정보 -->
+            <div class="spy-left-panel">
+                <div class="panel-header">기본 정보 & Selector</div>
+                
+                <!-- 기본 정보 -->
+                <div class="input-section">
+                    <div class="section-title">기본 정보</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Object Name <span class="required">*</span></label>
+                        <div class="help-text">
+                            카탈론에서 사용할 오브젝트 이름 (영문, 숫자, 언더스코어만)
+                        </div>
+                        <input type="text" class="input-field" id="objectName" placeholder="btn_login">
+                    </div>
 
+                    <div class="input-group">
+                        <label class="input-label">Selection Method <span class="required">*</span></label>
+                        <div class="help-text">
+                            카탈론이 엘리먼트를 찾을 때 우선 사용할 방법
+                        </div>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="xpathRadio" name="selectorMethod" value="XPATH" checked>
+                                <label for="xpathRadio">XPath</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="cssRadio" name="selectorMethod" value="CSS">
+                                <label for="cssRadio">CSS</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="basicRadio" name="selectorMethod" value="BASIC">
+                                <label for="basicRadio">BASIC</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Object Generator 탭 -->
-    <div id="object-generator" class="tab-content">
-      <style>
-        .generator-container {
-          display: flex;
-          gap: 20px;
-          padding: 20px;
-          height: calc(100vh - 120px);
-        }
+                <!-- Selector 정보 -->
+                <div class="input-section">
+                    <div class="section-title">Selector 정보</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">XPath <span class="required">*</span></label>
+                        <div class="help-text">
+                            개발자도구(F12) → Elements → 우클릭 → Copy → Copy full XPath
+                        </div>
+                        <input type="text" class="input-field" id="xpathInput" placeholder="//button[@id='login']">
+                        <div class="example-box">
+                            예시: //html/body/main/div/div[2]/form/div/div[2]/button
+                        </div>
+                    </div>
 
-        .generator-panel {
-          background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-          padding: 25px;
-          display: flex;
-          flex-direction: column;
-        }
+                    <div class="input-group">
+                        <label class="input-label">CSS Selector</label>
+                        <div class="help-text">
+                            개발자도구(F12) → Elements → 우클릭 → Copy → Copy selector
+                        </div>
+                        <input type="text" class="input-field" id="cssSelector" placeholder="#login">
+                        <div class="example-box">
+                            예시: button.MuiButton-root.MuiButton-text
+                        </div>
+                    </div>
 
-        .left-panel {
-          flex: 0 0 450px;
-          overflow-y: auto;
-        }
+                    <div class="input-group">
+                        <label class="input-label">BASIC Selector</label>
+                        <div class="help-text">
+                            카스텀 기본 selector (복합 조건 등)
+                        </div>
+                        <input type="text" class="input-field" id="basicSelector" placeholder="//button[contains(@class, 'login')]">
+                    </div>
+                </div>
 
-        .right-panel {
-          flex: 1;
-          overflow-y: auto;
-        }
+                <!-- XPath 변형들 -->
+                <div class="input-section">
+                    <div class="section-title">XPath 변형들</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">XPath Attributes</label>
+                        <div class="help-text">
+                            속성 기반 XPath (type, id, class 등)
+                        </div>
+                        <input type="text" class="input-field" id="xpathAttributes" placeholder="//button[@type='submit']">
+                    </div>
 
-        .panel-header {
-          font-size: 1.3em;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 25px;
-          padding-bottom: 15px;
-          border-bottom: 1px solid #eee;
-        }
+                    <div class="input-group">
+                        <label class="input-label">XPath Position</label>
+                        <div class="help-text">
+                            위치 기반 XPath (상대적 위치)
+                        </div>
+                        <input type="text" class="input-field" id="xpathPosition" placeholder="//div[2]/button">
+                    </div>
 
-        .input-group {
-          margin-bottom: 20px;
-        }
+                    <div class="input-group">
+                        <label class="input-label">XPath Neighbor</label>
+                        <div class="help-text">
+                            주변 엘리먼트 기반 XPath
+                        </div>
+                        <input type="text" class="input-field" id="xpathNeighbor" placeholder="(.//*[text()='Username'])[1]/following::input[1]">
+                    </div>
 
-        .input-group label {
-          display: block;
-          font-weight: 500;
-          color: #555;
-          margin-bottom: 8px;
-        }
+                    <div class="input-group">
+                        <label class="input-label">XPath Custom</label>
+                        <div class="help-text">
+                            복합 조건 XPath (text, class 조합)
+                        </div>
+                        <input type="text" class="input-field" id="xpathCustom" placeholder="//button[text()='로그인' and @class='btn-primary']">
+                    </div>
+                </div>
+            </div>
 
-        .input-group .help-text {
-          font-size: 0.8em;
-          color: #777;
-          margin-left: 8px;
-        }
+            <!-- 우측 패널: 엘리먼트 속성 + Smart Locator -->
+            <div class="spy-right-panel">
+                <div class="panel-header">엘리먼트 속성 & Locator</div>
+                
+                <!-- 엘리먼트 속성들 -->
+                <div class="input-section">
+                    <div class="section-title">엘리먼트 속성들</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Tag Name</label>
+                        <div class="help-text">
+                            HTML 태그 이름 (button, input, div, a, span)
+                        </div>
+                        <input type="text" class="input-field" id="tagName" placeholder="button">
+                    </div>
 
-        .input-group input {
-          width: 100%;
-          padding: 10px;
-          border: 1px solid #ddd;
-          border-radius: 5px;
-          font-size: 0.95em;
-          box-sizing: border-box;
-        }
+                    <div class="input-group">
+                        <label class="input-label">Class</label>
+                        <div class="help-text">
+                            엘리먼트의 class 속성 전체 값 (개발자도구에서 복사)
+                        </div>
+                        <input type="text" class="input-field" id="className" placeholder="MuiButton-root MuiButton-contained">
+                    </div>
 
-        .add-btn {
-          width: 100%;
-          padding: 12px;
-          font-size: 1.1em;
-          font-weight: 600;
-          background: linear-gradient(135deg, #562ceb 0%, #4527a0 100%);
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          margin-top: 10px;
-        }
+                    <div class="input-group">
+                        <label class="input-label">ID</label>
+                        <div class="help-text">
+                            엘리먼트의 id 속성 값
+                        </div>
+                        <input type="text" class="input-field" id="idValue" placeholder="login-button">
+                    </div>
 
-        .add-btn:hover {
-          opacity: 0.9;
-        }
+                    <div class="input-group">
+                        <label class="input-label">Type</label>
+                        <div class="help-text">
+                            input/button의 type 속성 (text, password, submit, button)
+                        </div>
+                        <input type="text" class="input-field" id="typeValue" placeholder="submit">
+                    </div>
 
-        .object-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
+                    <div class="input-group">
+                        <label class="input-label">Name</label>
+                        <div class="help-text">
+                            폼 엘리먼트의 name 속성
+                        </div>
+                        <input type="text" class="input-field" id="nameValue" placeholder="username">
+                    </div>
 
-        .object-list-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 15px;
-          border-bottom: 1px solid #f0f0f0;
-        }
+                    <div class="input-group">
+                        <label class="input-label">Text</label>
+                        <div class="help-text">
+                            엘리먼트가 포함하는 텍스트 (버튼 텍스트, 링크 텍스트 등)
+                        </div>
+                        <input type="text" class="input-field" id="textValue" placeholder="로그인">
+                    </div>
+                </div>
 
-        .object-list-item:last-child {
-          border-bottom: none;
-        }
+                <!-- Smart Locator -->
+                <div class="input-section">
+                    <div class="section-title">Smart Locator</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Smart Locator</label>
+                        <div class="help-text">
+                            카탈론의 지능형 locator (텍스트나 역할 기반)
+                        </div>
+                        <input type="text" class="input-field" id="smartLocator" placeholder='internal:role=button[name="로그인"i]'>
+                        <div class="example-box">
+                            예시: internal:text="회원가입"s, internal:role=button[name="로그인"i]
+                        </div>
+                    </div>
+                </div>
 
-        .object-name {
-          font-weight: 500;
-        }
+                <!-- 기타 속성들 -->
+                <div class="input-section">
+                    <div class="section-title">기타 속성들</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">추가 속성 (JSON)</label>
+                        <div class="help-text">
+                            추가 속성들을 JSON 형태로 입력
+                        </div>
+                        <textarea class="input-field textarea-field" id="otherAttributes" placeholder='{"placeholder": "아이디를 입력하세요", "maxlength": "50"}'></textarea>
+                    </div>
+                </div>
 
-        .object-actions button {
-          margin-left: 10px;
-          padding: 5px 10px;
-          border: 1px solid #ccc;
-          background: #f9f9f9;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-
-        .export-all-btn {
-          margin-top: auto;
-          /* Push to bottom */
-          padding: 12px;
-          font-size: 1.1em;
-          background: #10b981;
-          color: white;
-        }
-      </style>
-      <div class="generator-container">
-        <div class="generator-panel left-panel">
-          <div class="panel-header">오브젝트 속성 입력</div>
-
-          <div class="input-group">
-            <label for="obj_name">Object Name <span class="help-text">(.rs 파일 이름)</span></label>
-            <input type="text" id="obj_name" placeholder="예: btn_login">
-          </div>
-
-          <h4 style="margin-top: 20px; margin-bottom: 10px; color: #444;">Selectors</h4>
-
-          <div class="input-group">
-            <label for="obj_xpath">XPath <span class="help-text">DevTools > 우클릭 > Copy > Copy full XPath</span></label>
-            <input type="text" id="obj_xpath" placeholder="//button[@id='login']">
-          </div>
-          <div class="input-group">
-            <label for="obj_css">CSS Selector <span class="help-text">DevTools > 우클릭 > Copy > Copy
-                selector</span></label>
-            <input type="text" id="obj_css" placeholder="#login">
-          </div>
-          <div class="input-group">
-            <label for="obj_id">ID <span class="help-text">DevTools > Elements 탭에서 id 속성 값</span></label>
-            <input type="text" id="obj_id" placeholder="login">
-          </div>
-          <div class="input-group">
-            <label for="obj_name_attr">Name <span class="help-text">DevTools > Elements 탭에서 name 속성 값</span></label>
-            <input type="text" id="obj_name_attr" placeholder="login_button">
-          </div>
-
-          <h4 style="margin-top: 20px; margin-bottom: 10px; color: #444;">Other Properties</h4>
-
-          <div class="input-group">
-            <label for="obj_tag">Tag Name <span class="help-text">예: button, input, div</span></label>
-            <input type="text" id="obj_tag" placeholder="button">
-          </div>
-          <div class="input-group">
-            <label for="obj_text">Text <span class="help-text">요소가 포함하는 텍스트</span></label>
-            <input type="text" id="obj_text" placeholder="Log In">
-          </div>
-
-          <button id="addObjectBtn" class="add-btn">[+] 목록에 추가하기</button>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="generateObjectFile()">Object Repository 파일 생성</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">전체 초기화</button>
+                </div>
+            </div>
         </div>
-        <div class="generator-panel right-panel">
-          <div class="panel-header">생성된 오브젝트 목록</div>
-          <ul id="generatedObjectList" class="object-list">
-            <!-- 생성된 오브젝트가 여기에 추가됩니다 -->
-            <li style="text-align: center; color: #888; padding: 50px 0;">목록이 비어있습니다.</li>
-          </ul>
-          <button id="exportAllBtn" class="add-btn export-all-btn" disabled>[📦] Export All as ZIP</button>
-        </div>
-      </div>
     </div>
 
   </main>
 
-  <!-- 🔥 스크립트 로드 순서 (수파베이스 먼저) -->
-  <!-- 1. 수파베이스 설정 -->
+  <!-- 수파베이스 설정 -->
   <script>
     const { createClient } = supabase;
     const testClient = createClient(
@@ -609,32 +642,29 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       };
     };
 
-    console.log('✅ 인라인 수파베이스 함수 등록 완료');
+    console.log('수파베이스 함수 등록 완료');
   </script>
 
-  <!-- 기존 라이브러리들 -->
-  <script src="libs/common_utils_zip.js"></script>
-  <script src="libs/csv_parser_zip.js"></script>
-  <script src="libs/groovy_converter_zip.js"></script>
-  <script src="libs/report_viewer_zip.js"></script>
-  <script src="libs/script.js"></script>
-  <script src="libs/gemini-keywords.js"></script>
+<!-- 기존 라이브러리들 -->
+<script src="libs/common_utils_zip.js"></script>
+<script src="libs/csv_parser_zip.js"></script>
+<script src="libs/groovy_converter_zip.js"></script>
+<script src="libs/report_viewer_zip.js"></script>
+<script src="libs/script.js"></script>
+<script src="libs/gemini-keywords.js"></script>
 
-  <!-- 테스트케이스 매핑 모듈들 -->
-  <script src="libs/testcase_mapping/testcase_parser.js"></script>
-  <script src="libs/testcase_mapping/katalon_mapper.js"></script>
-  <script src="libs/testcase_mapping/testcase_ui_controller.js"></script>
-  <script src="libs/testcase_mapping/testcase_mapper_supabase.js"></script>
-  <!-- Prompt JS Files -->
-  <script src="libs/prompts/gemma_step1_analyze.js"></script>
-  <script src="libs/prompts/gemma_step2_map_actions.js"></script>
-  <script src="libs/prompts/gemma_step3_generate_script.js"></script>
-  <script src="libs/prompts/gemma_step4_evaluate.js"></script>
-  <script src="libs/prompts/gemma_step5_improve.js"></script>
-  <script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
-  <script src="libs/ai_engine_gemini-2.0-flash.js"></script>
+<!-- 테스트케이스 매핑 모듈들 -->
+<script src="libs/testcase_mapping/testcase_parser.js"></script>
+<script src="libs/testcase_mapping/katalon_mapper.js"></script>
+<script src="libs/testcase_mapping/testcase_ui_controller.js"></script>
+<script src="libs/testcase_mapping/testcase_mapper_supabase.js"></script>
 
+<!-- 통합 프롬프트 파일 -->
+<script src="libs/prompts/gemma_master_prompt.js"></script>
 
+<!-- AI 엔진들 -->
+<script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
+<script src="libs/ai_engine_gemini-2.0-flash.js"></script>
 
   <!-- 애플리케이션 메인 스크립트들 -->
   <script src="assets/js/ui-utils.js"></script>
@@ -642,10 +672,9 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
   <script src="assets/js/main.js"></script>
 
   <script>
-    // 수정된 코드 (안전한 탭 전환)
+    // 탭 전환 기능
     document.querySelectorAll('.tab-button').forEach(button => {
       button.addEventListener('click', () => {
-        // 버튼이 비활성화 상태이면 아무것도 하지 않음
         if (button.disabled) {
           return;
         }
@@ -653,13 +682,10 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
         const tabId = button.getAttribute('data-tab');
         const targetTab = document.getElementById(tabId);
 
-        // 대상 탭이 존재하는지 확인
         if (targetTab) {
-          // 모든 탭 비활성화
           document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
           document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-          // 선택된 탭 활성화
           button.classList.add('active');
           targetTab.classList.add('active');
         } else {
@@ -672,7 +698,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     document.getElementById('csvFile').addEventListener('change', function () {
       const label = this.nextElementSibling;
       if (this.files.length > 0) {
-        label.innerHTML = `✅ ${this.files[0].name}`;
+        label.innerHTML = `${this.files[0].name}`;
         label.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
       }
     });
@@ -680,7 +706,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     document.getElementById('excelFile').addEventListener('change', function () {
       const label = this.nextElementSibling;
       if (this.files.length > 0) {
-        label.innerHTML = `✅ ${this.files[0].name}`;
+        label.innerHTML = `${this.files[0].name}`;
         label.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
       }
     });
@@ -688,7 +714,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     document.getElementById('reportFileInput').addEventListener('change', function () {
       const label = this.nextElementSibling;
       if (this.files.length > 0) {
-        label.innerHTML = `✅ ${this.files[0].name}`;
+        label.innerHTML = `${this.files[0].name}`;
         label.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
       }
     });
@@ -709,7 +735,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       }
     }
 
-    // 에러 메시지 표시 함수
+    // 에러/성공 메시지 함수들
     function showError(message) {
       const errorDiv = document.getElementById('error');
       errorDiv.innerHTML = `
@@ -725,7 +751,6 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       }, 3000);
     }
 
-    // 성공 메시지 표시 함수
     function showSuccess(message) {
       const errorDiv = document.getElementById('error');
       errorDiv.innerHTML = `
@@ -741,7 +766,6 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       }, 3000);
     }
 
-    // 로딩 상태 표시 함수
     function showLoading(buttonElement, originalText) {
       buttonElement.innerHTML = `<span class="loading"></span>${originalText}`;
       buttonElement.disabled = true;
@@ -752,41 +776,36 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
       buttonElement.disabled = false;
     }
 
+    // 스마트 매핑 함수들
     async function startSmartMapping() {
       const selectedModel = document.getElementById('aiModelSelect').value;
 
-      // 엔진 존재 확인 및 생성
       if (selectedModel === 'gemma-3-27b-it') {
-        // GemmaEngine 클래스 확인
         if (typeof GemmaEngine === 'undefined') {
-          alert('❌ AI 엔진이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+          alert('AI 엔진이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
           return;
         }
 
-        // 인스턴스 확인 및 생성
         if (!window.gemmaEngine) {
-          console.log('🔧 Gemma 엔진 생성 중...');
+          console.log('Gemma 엔진 생성 중...');
           window.gemmaEngine = new GemmaEngine();
         }
         await startSmartMappingGemma();
 
       } else if (selectedModel === 'gemini-2.0-flash') {
-        // GeminiFlashEngine 클래스 확인
         if (typeof GeminiFlashEngine === 'undefined') {
-          alert('❌ AI 엔진이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+          alert('AI 엔진이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
           return;
         }
 
-        // 인스턴스 확인 및 생성
         if (!window.geminiFlashEngine) {
-          console.log('🔧 Gemini Flash 엔진 생성 중...');
+          console.log('Gemini Flash 엔진 생성 중...');
           window.geminiFlashEngine = new GeminiFlashEngine();
         }
         await startSmartMappingGemini();
       }
     }
 
-    // AI 검토 반영 함수 (모델별 분기)
     function improveSmartScript() {
       const selectedModel = document.getElementById('aiModelSelect').value;
 
@@ -806,49 +825,42 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
         alert('지원되지 않는 AI 모델입니다.');
       }
     }
-    // 스마트 매핑 전체 초기화 함수
-    function resetSmartMapping() {
-      console.log('🔄 스마트 매핑 전체 초기화 시작');
 
-      // 확인 대화상자
+    function resetSmartMapping() {
+      console.log('스마트 매핑 전체 초기화 시작');
+
       if (!confirm('스마트 매핑을 초기화하시겠습니까?\n모든 입력 내용과 결과가 삭제됩니다.')) {
         return;
       }
 
       try {
-        // 1. 입력 영역 초기화
         const testcaseInput = document.getElementById('smartTestcaseInput');
         if (testcaseInput) {
           testcaseInput.value = '';
         }
 
-        // 2. AI 모델 선택 기본값으로 리셋
         const modelSelect = document.getElementById('aiModelSelect');
         if (modelSelect) {
           modelSelect.value = 'gemma-3-27b-it';
         }
 
-        // 3. 진행 상태 초기화
         const progressContainer = document.getElementById('smartProgress');
         if (progressContainer) {
           progressContainer.style.display = 'none';
         }
 
-        // 진행 단계 초기화
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 8; i++) {
           const step = document.getElementById(`step${i}`);
           if (step) {
             step.className = 'step';
           }
         }
 
-        // 진행 상세 로그 초기화
         const progressDetails = document.getElementById('progressDetails');
         if (progressDetails) {
           progressDetails.innerHTML = '';
         }
 
-        // 4. 결과 영역 초기화
         const resultContainer = document.getElementById('smartResult');
         if (resultContainer) {
           resultContainer.style.display = 'none';
@@ -859,7 +871,6 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           scriptElement.textContent = '';
         }
 
-        // 5. 품질 평가 영역 초기화
         const scoreDisplay = document.getElementById('smartScriptScore');
         const placeholder = document.getElementById('qualityPlaceholder');
 
@@ -868,14 +879,12 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           placeholder.style.display = 'block';
         }
 
-        // 6. 버튼 상태 초기화
         const generateBtn = document.querySelector('.smart-generate-btn');
         if (generateBtn) {
           generateBtn.disabled = false;
           generateBtn.innerHTML = '🧠 스마트 분석 시작';
         }
 
-        // 7. 전역 변수 초기화
         window.smartGeneratedScript = null;
         if (window.gemmaEngine) {
           window.gemmaEngine.lastEvaluation = null;
@@ -884,13 +893,12 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           window.geminiFlashEngine.lastEvaluation = null;
         }
 
-        console.log('✅ 스마트 매핑 초기화 완료');
+        console.log('스마트 매핑 초기화 완료');
 
-        // 성공 메시지 표시 (선택적)
         const resetBtn = document.getElementById('smartResetBtn');
         if (resetBtn) {
           const originalText = resetBtn.innerHTML;
-          resetBtn.innerHTML = '✅ 초기화됨';
+          resetBtn.innerHTML = '초기화됨';
           resetBtn.disabled = true;
 
           setTimeout(() => {
@@ -900,21 +908,19 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
         }
 
       } catch (error) {
-        console.error('❌ 초기화 실패:', error);
+        console.error('초기화 실패:', error);
         alert('초기화 중 오류가 발생했습니다: ' + error.message);
       }
     }
 
-    // 초기화 버튼 이벤트 리스너 등록
     document.addEventListener('DOMContentLoaded', function () {
       const resetBtn = document.getElementById('smartResetBtn');
       if (resetBtn) {
         resetBtn.addEventListener('click', resetSmartMapping);
-        console.log('✅ 스마트 매핑 초기화 버튼 이벤트 등록 완료');
+        console.log('스마트 매핑 초기화 버튼 이벤트 등록 완료');
       }
     });
 
-    // 전역 함수로도 등록 (호출 편의성)
     window.resetSmartMapping = resetSmartMapping;
   </script>
 </body>
