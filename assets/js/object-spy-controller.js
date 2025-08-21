@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const xpath = document.getElementById('xpath').value.trim();
+        const xpath = document.getElementById('xpathInput').value.trim();
         if (!xpath) {
             alert('XPath는 필수 항목입니다.');
             return;
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.input-field').forEach(field => {
                 field.value = '';
             });
-            document.getElementById('xpath').checked = true;
+            document.getElementById('xpathRadio').checked = true;
         }
     };
 
