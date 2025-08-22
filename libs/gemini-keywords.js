@@ -5,11 +5,7 @@
 
 class GeminiKeywordExtractor {
     constructor() {
-        this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent';
-        console.log('🤖 Gemini 키워드 추출기 생성됨 - Model: gemma-3-27b-it');
-        // this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-        // console.log('🤖 Gemini 키워드 추출기 생성됨 - Model: gemini-2.0-flash');
+        console.log('🤖 Gemini 키워드 추출기 생성됨');
     }
 
     /**
@@ -36,15 +32,21 @@ class GeminiKeywordExtractor {
 }`;
 
         try {
-            console.log(`🚀 Gemini API 호출 중... (텍스트: "${text.substring(0, 50)}...")`);
+            console.log(`🚀 Supabase 함수 호출 중... (텍스트: "${text.substring(0, 50)}...")`);
             
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
+            const supabase = window.getSupabaseClient();
+            if (!supabase) {
+                throw new Error("Supabase client not initialized");
+            }
+
+            // Note: The keyword extractor seems to use a specific model.
+            // We will hardcode 'gemma-3-27b-it' for now as it was in the original file.
+            // A better approach would be to make this configurable if needed.
+            const model = 'gemma-3-27b-it';
+
+            const { data: responseData, error } = await supabase.functions.invoke('abcd', {
+                body: {
+                    model: model,
                     contents: [{ 
                         parts: [{ text: prompt }] 
                     }],
@@ -52,33 +54,31 @@ class GeminiKeywordExtractor {
                         temperature: 0.1,
                         maxOutputTokens: 1000
                     }
-                })
+                }
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (error) {
+                throw new Error(`Supabase function error: ${error.message}`);
             }
-
-            const data = await response.json();
             
-            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-                throw new Error('Gemini API 응답 형식이 올바르지 않습니다');
+            if (!responseData.candidates || !responseData.candidates[0] || !responseData.candidates[0].content) {
+                throw new Error('API 응답 형식이 올바르지 않습니다');
             }
 
-            const resultText = data.candidates[0].content.parts[0].text;
-            console.log('📥 Gemini 원본 응답:', resultText);
+            const resultText = responseData.candidates[0].content.parts[0].text;
+            console.log('📥 원본 응답:', resultText);
 
             // JSON 파싱 시도
             const cleanedText = this.cleanJsonResponse(resultText);
             const result = JSON.parse(cleanedText);
             
             const keywords = result.allKeywords || [];
-            console.log(`✅ Gemini 키워드 추출 성공: [${keywords.join(', ')}]`);
+            console.log(`✅ 키워드 추출 성공: [${keywords.join(', ')}]`);
             
             return keywords;
 
         } catch (error) {
-            console.warn('❌ Gemini 키워드 추출 실패:', error.message);
+            console.warn(`❌ 키워드 추출 실패:`, error.message);
             console.log('🔄 기존 방식으로 fallback 실행');
             return this.fallbackExtractKeywords(text);
         }
@@ -91,7 +91,7 @@ class GeminiKeywordExtractor {
      */
     cleanJsonResponse(text) {
         // ```json 블록 제거
-        let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+        let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
         
         // 앞뒤 불필요한 텍스트 제거
         const jsonStart = cleaned.indexOf('{');
@@ -128,32 +128,24 @@ class GeminiKeywordExtractor {
     }
 
     /**
-     * API 키 유효성 검사
-     * @returns {boolean} API 키 유효 여부
-     */
-    isApiKeyValid() {
-        return this.apiKey && this.apiKey.length > 20;
-    }
-
-    /**
      * 연결 테스트
      * @returns {Promise<boolean>} 연결 성공 여부
      */
     async testConnection() {
         try {
-            console.log('🔍 Gemini API 연결 테스트 중...');
+            console.log('🔍 Supabase 함수 연결 테스트 중...');
             
             const testKeywords = await this.extractKeywords('테스트 버튼을 클릭한다');
             
             if (testKeywords && testKeywords.length > 0) {
-                console.log('✅ Gemini API 연결 테스트 성공');
+                console.log('✅ Supabase 함수 연결 테스트 성공');
                 return true;
             } else {
-                console.warn('⚠️ Gemini API 응답이 비어있음');
+                console.warn('⚠️ Supabase 함수 응답이 비어있음');
                 return false;
             }
         } catch (error) {
-            console.error('❌ Gemini API 연결 테스트 실패:', error);
+            console.error('❌ Supabase 함수 연결 테스트 실패:', error);
             return false;
         }
     }
@@ -169,16 +161,10 @@ console.log('📚 Gemini 키워드 추출기 모듈 로드 완료');
 setTimeout(async () => {
     if (window.GeminiKeywordExtractor) {
         const testExtractor = new GeminiKeywordExtractor();
-        if (testExtractor.isApiKeyValid()) {
-            console.log('✅ Gemini API 키 유효성 확인됨');
-            // 연결 테스트는 필요시에만 실행
-            // await testExtractor.testConnection();
-        } else {
-            console.warn('⚠️ Gemini API 키가 유효하지 않습니다');
-        }
+        // The API key is now handled by the server, so we can assume the client is always "valid"
+        // if the Supabase client is available.
+        console.log('✅ 키워드 추출기 클라이언트 준비 완료');
+        // You can uncomment the following line to run a connection test on startup.
+        // await testExtractor.testConnection();
     }
-
 }, 500);
-
-
-

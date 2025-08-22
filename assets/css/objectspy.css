@@ -229,3 +229,54 @@
 .spy-right-panel::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+
+/* XPath Neighbor 동적 리스트 */
+.xpath-neighbor-item {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.xpath-neighbor-input {
+    flex: 1;
+}
+
+.add-neighbor-btn, .remove-neighbor-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #f9fafb;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.add-neighbor-btn:hover, .remove-neighbor-btn:hover {
+    background: #e5e7eb;
+}
+
+.xpath-neighbor-item {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.xpath-neighbor-input {
+    flex: 1;
+}
+
+.add-neighbor-btn, .remove-neighbor-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #f9fafb;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.add-neighbor-btn:hover, .remove-neighbor-btn:hover {
+    background: #e5e7eb;
+}

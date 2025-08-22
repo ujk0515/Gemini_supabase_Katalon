@@ -5,8 +5,6 @@
 
 class GemmaEngine {
    constructor() {
-       this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
-       this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent';
        this.analysisResults = {};
        this.currentStep = 0;
        this.lastEvaluation = null;
@@ -14,10 +12,7 @@ class GemmaEngine {
        this.cacheTimestamp = null;
    }
 
-   getBaseUrl() {
-       const selectedModel = document.getElementById('aiModelSelect').value;
-       return `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-   }
+   
 
    async getPromptStep(stepNumber) {
        const now = Date.now();
@@ -105,7 +100,7 @@ class GemmaEngine {
                const examplesText = variables.examples.length > 0 ? 
                    variables.examples.map(e => `// 예제: ${e.description}\n${e.script}`).join('\n\n') : 
                    '// 참고할 예제 없음';
-               processedPrompt = processedPrompt.replace(/\$\{examples\.length > 0 \? examples\.map\(e => "\/\/ 예제: " \+ e\.description \+ "\\n" \+ e\.script\)\.join\("\\n\\n"\) : "\/\/ 참고할 예제 없음"\}/g, examplesText);
+               processedPrompt = processedPrompt.replace(/\$\{examples\.length > 0 \? examples\.map\(e => \"\/\/ 예제: \" \+ e\.description \+ \"\\n\" \+ e\.script\)\.join\(\"\\\\n\\\\n\"\) : \"\/\/ 참고할 예제 없음\"\}/g, examplesText);
            }
 
            if (variables.plan) {
@@ -241,26 +236,7 @@ class GemmaEngine {
    }
 
    async evaluateScriptQuality(script) {
-       const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.
-
-=== 평가 대상 스크립트 ===
-${script}
-
-=== 평가 기준 ===
-1. 코드 품질 (30점)
-2. 실행 가능성 (25점)
-3. 효율성 (20점)
-4. 가독성 (15점)
-5. 표준 준수 (10점)
-
-다음 JSON 형식으로만 반환하세요:
-{
- "score": 85,
- "grade": "양호",
- "issues": ["구체적인 문제점1", "구체적인 문제점2"],
- "strengths": ["잘된 부분1", "잘된 부분2"],
- "recommendation": "개선 권장사항"
-}`;
+       const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.\n\n=== 평가 대상 스크립트 ===\n${script}\n\n=== 평가 기준 ===\n1. 코드 품질 (30점)\n2. 실행 가능성 (25점)\n3. 효율성 (20점)\n4. 가독성 (15점)\n5. 표준 준수 (10점)\n\n다음 JSON 형식으로만 반환하세요:\n{\n "score": 85,\n "grade": "양호",\n "issues": ["구체적인 문제점1", "구체적인 문제점2"],\n "strengths": ["잘된 부분1", "잘된 부분2"],\n "recommendation": "개선 권장사항"\n}`;
 
        try {
            console.log('AI 스크립트 품질 평가 시작...');
@@ -373,17 +349,7 @@ ${script}
    async improveScriptBasedOnEvaluation(originalScript, evaluation) {
        console.log('AI 검토 반영 시작...');
        
-       const prompt = `다음은 이미 생성된 Katalon Groovy 스크립트입니다. 이 스크립트를 거의 그대로 유지하면서, 아래 지적된 문제점들을 분석하여 실제 개선이 필요한 부분만 최소한으로 수정해주세요.
-
-=== 원본 스크립트 ===
-${originalScript}
-
-=== 검토된 문제점들 ===
-${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') : '특별한 문제점 없음'}
-
-완전한 Groovy 스크립트만 반환하세요. 설명이나 JSON 래핑 없이 순수 코드로만 응답해야 합니다.
-
-현재 점수 ${evaluation.score}점에서 85점 이상이 목표입니다.`;
+       const prompt = `다음은 이미 생성된 Katalon Groovy 스크립트입니다. 이 스크립트를 거의 그대로 유지하면서, 아래 지적된 문제점들을 분석하여 실제 개선이 필요한 부분만 최소한으로 수정해주세요.\n\n=== 원본 스크립트 ===\n${originalScript}\n\n=== 검토된 문제점들 ===\n${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') : '특별한 문제점 없음'}\n\n완전한 Groovy 스크립트만 반환하세요. 설명이나 JSON 래핑 없이 순수 코드로만 응답해야 합니다.\n\n현재 점수 ${evaluation.score}점에서 85점 이상이 목표입니다.`;
 
        try {
            const result = await this.callGemini(prompt);
@@ -437,21 +403,27 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
    }
 
    async callGemini(prompt) {
-       await new Promise(resolve => setTimeout(resolve, 5000));
+       await new Promise(resolve => setTimeout(resolve, 1000));
 
-       const response = await fetch(`${this.getBaseUrl()}?key=${this.apiKey}`, {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({
-               contents: [{ parts: [{ text: prompt }] }]
-           })
-       });
+       const selectedModel = document.getElementById('aiModelSelect').value;
+       const supabase = window.getSupabaseClient();
 
-       if (!response.ok) {
-           throw new Error(`API Error: ${response.status}`);
+       if (!supabase) {
+           throw new Error("Supabase client not initialized");
        }
 
-       const data = await response.json();
+       const { data, error } = await supabase.functions.invoke('abcd', {
+           body: {
+               model: selectedModel,
+               contents: [{ parts: [{ text: prompt }] }]
+           }
+       });
+
+       if (error) {
+           console.error('Supabase function error:', error);
+           throw new Error(`Function Error: ${error.message}`);
+       }
+
        const resultText = data.candidates[0].content.parts[0].text;
 
        console.log('Gemini 원본 응답:', resultText);
@@ -464,7 +436,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
            return JSON.parse(resultText);
        } catch (e1) {
            try {
-               const cleanedText = resultText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+               const cleanedText = resultText.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
                return JSON.parse(cleanedText);
            } catch (e2) {
                try {
@@ -486,19 +458,23 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
        return {
            testPurpose: "테스트 목적 파악 실패",
            testScope: "fallback_test",
-           environmentSetup: [{
-               action: "WebUI.navigateToUrl",
-               target: "GlobalVariable.BASE_URL",
-               purpose: "기본 페이지 접속",
-               required: true
-           }],
-           preconditionAnalysis: [{
-               originalCondition: "분석 실패",
-               actionType: "manual_check",
-               katalonAction: "WebUI.comment",
-               objectPath: "Manual verification required",
-               technicalNeed: "수동 확인 필요"
-           }]
+           environmentSetup: [
+               {
+                   action: "WebUI.navigateToUrl",
+                   target: "GlobalVariable.BASE_URL",
+                   purpose: "기본 페이지 접속",
+                   required: true
+               }
+           ],
+           preconditionAnalysis: [
+               {
+                   originalCondition: "분석 실패",
+                   actionType: "manual_check",
+                   katalonAction: "WebUI.comment",
+                   objectPath: "Manual verification required",
+                   technicalNeed: "수동 확인 필요"
+               }
+           ]
        };
    }
 
@@ -717,7 +693,7 @@ async function startSmartMappingGemma() {
    try {
        await window.gemmaEngine.startAnalysis(input);
    } catch (error) {
-       alert('분석 실패: ' + error.message);
+       alert(`분석 실패: ${error.message}`);
    } finally {
        button.disabled = false;
        button.innerHTML = '스마트 분석 시작';

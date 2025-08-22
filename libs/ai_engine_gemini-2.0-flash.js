@@ -5,8 +5,6 @@
 
 class GeminiFlashEngine {
    constructor() {
-       this.apiKey = 'AIzaSyDE-edho0DTkfMbsGF9XoiOQgCPkVJInzU';
-       this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
        this.analysisResults = {};
        this.currentStep = 0;
        this.lastEvaluation = null;
@@ -14,10 +12,7 @@ class GeminiFlashEngine {
        this.cacheTimestamp = null;
    }
 
-   getBaseUrl() {
-       const selectedModel = document.getElementById('aiModelSelect').value;
-       return `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-   }
+   
 
    async getPromptStep(stepNumber) {
        const now = Date.now();
@@ -431,21 +426,27 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
    }
 
    async callGemini(prompt) {
-       await new Promise(resolve => setTimeout(resolve, 5000));
+       await new Promise(resolve => setTimeout(resolve, 1000));
 
-       const response = await fetch(`${this.getBaseUrl()}?key=${this.apiKey}`, {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({
-               contents: [{ parts: [{ text: prompt }] }]
-           })
-       });
+       const selectedModel = document.getElementById('aiModelSelect').value;
+       const supabase = window.getSupabaseClient();
 
-       if (!response.ok) {
-           throw new Error(`API Error: ${response.status}`);
+       if (!supabase) {
+           throw new Error("Supabase client not initialized");
        }
 
-       const data = await response.json();
+       const { data, error } = await supabase.functions.invoke('abcd', {
+           body: {
+               model: selectedModel,
+               contents: [{ parts: [{ text: prompt }] }]
+           }
+       });
+
+       if (error) {
+           console.error('Supabase function error:', error);
+           throw new Error(`Function Error: ${error.message}`);
+       }
+
        const resultText = data.candidates[0].content.parts[0].text;
 
        console.log('Gemini 원본 응답:', resultText);

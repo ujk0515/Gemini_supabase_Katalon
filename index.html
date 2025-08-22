@@ -406,221 +406,246 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
 
     <!-- Object Spy 탭 -->
     <div id="object-spy" class="tab-content">
-        <div class="spy-container">
-            <!-- 좌측 패널: 기본 정보 + Selector 정보 -->
-            <div class="spy-left-panel">
-                <div class="panel-header">기본 정보 & Selector</div>
-                
-                <!-- 기본 정보 -->
-                <div class="input-section">
-                    <div class="section-title">기본 정보</div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">Object Name <span class="required">*</span></label>
-                        <div class="help-text">
-                            카탈론에서 사용할 오브젝트 이름 (영문, 숫자, 언더스코어만)
-                        </div>
-                        <input type="text" class="input-field" id="objectName" placeholder="btn_login">
-                    </div>
+      <div class="spy-container">
+        <!-- 좌측 패널: 기본 정보 + Selector 정보 -->
+        <div class="spy-left-panel">
+          <div class="panel-header">기본 정보 & Selector</div>
 
-                    <div class="input-group">
-                        <label class="input-label">Selection Method <span class="required">*</span></label>
-                        <div class="help-text">
-                            카탈론이 엘리먼트를 찾을 때 우선 사용할 방법
-                        </div>
-                        <div class="radio-group">
-                            <div class="radio-option">
-                                <input type="radio" id="xpathRadio" name="selectorMethod" value="XPATH" checked>
-                                <label for="xpathRadio">XPath</label>
-                            </div>
-                            <div class="radio-option">
-                                <input type="radio" id="cssRadio" name="selectorMethod" value="CSS">
-                                <label for="cssRadio">CSS</label>
-                            </div>
-                            <div class="radio-option">
-                                <input type="radio" id="basicRadio" name="selectorMethod" value="BASIC">
-                                <label for="basicRadio">BASIC</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          <!-- 기본 정보 -->
+          <div class="input-section">
+            <div class="section-title">기본 정보</div>
 
-                <!-- Selector 정보 -->
-                <div class="input-section">
-                    <div class="section-title">Selector 정보</div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">XPath <span class="required">*</span></label>
-                        <div class="help-text">
-                            개발자도구(F12) → Elements → 우클릭 → Copy → Copy full XPath
-                        </div>
-                        <input type="text" class="input-field" id="xpathInput" placeholder="//button[@id='login']">
-                        <div class="example-box">
-                            예시: //html/body/main/div/div[2]/form/div/div[2]/button
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">CSS Selector</label>
-                        <div class="help-text">
-                            개발자도구(F12) → Elements → 우클릭 → Copy → Copy selector
-                        </div>
-                        <input type="text" class="input-field" id="cssSelector" placeholder="#login">
-                        <div class="example-box">
-                            예시: button.MuiButton-root.MuiButton-text
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">BASIC Selector</label>
-                        <div class="help-text">
-                            카스텀 기본 selector (복합 조건 등)
-                        </div>
-                        <input type="text" class="input-field" id="basicSelector" placeholder="//button[contains(@class, 'login')]">
-                    </div>
-                </div>
-
-                <!-- XPath 변형들 -->
-                <div class="input-section">
-                    <div class="section-title">XPath 변형들</div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">XPath Attributes</label>
-                        <div class="help-text">
-                            속성 기반 XPath (type, id, class 등)
-                        </div>
-                        <input type="text" class="input-field" id="xpathAttributes" placeholder="//button[@type='submit']">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">XPath Position</label>
-                        <div class="help-text">
-                            위치 기반 XPath (상대적 위치)
-                        </div>
-                        <input type="text" class="input-field" id="xpathPosition" placeholder="//div[2]/button">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">XPath Neighbor</label>
-                        <div class="help-text">
-                            주변 엘리먼트 기반 XPath
-                        </div>
-                        <input type="text" class="input-field" id="xpathNeighbor" placeholder="(.//*[text()='Username'])[1]/following::input[1]">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">XPath Custom</label>
-                        <div class="help-text">
-                            복합 조건 XPath (text, class 조합)
-                        </div>
-                        <input type="text" class="input-field" id="xpathCustom" placeholder="//button[text()='로그인' and @class='btn-primary']">
-                    </div>
-                </div>
+            <div class="input-group">
+              <label class="input-label">Object Name <span class="required">*</span></label>
+              <div class="help-text">
+                카탈론에서 사용할 오브젝트 이름 (영문, 숫자, 언더스코어만)
+              </div>
+              <input type="text" class="input-field" id="objectName" placeholder="btn_login">
             </div>
 
-            <!-- 우측 패널: 엘리먼트 속성 + Smart Locator -->
-            <div class="spy-right-panel">
-                <div class="panel-header">엘리먼트 속성 & Locator</div>
-                
-                <!-- 엘리먼트 속성들 -->
-                <div class="input-section">
-                    <div class="section-title">엘리먼트 속성들</div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">Tag Name</label>
-                        <div class="help-text">
-                            HTML 태그 이름 (button, input, div, a, span)
-                        </div>
-                        <input type="text" class="input-field" id="tagName" placeholder="button">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Class</label>
-                        <div class="help-text">
-                            엘리먼트의 class 속성 전체 값 (개발자도구에서 복사)
-                        </div>
-                        <input type="text" class="input-field" id="className" placeholder="MuiButton-root MuiButton-contained">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">ID</label>
-                        <div class="help-text">
-                            엘리먼트의 id 속성 값
-                        </div>
-                        <input type="text" class="input-field" id="idValue" placeholder="login-button">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Type</label>
-                        <div class="help-text">
-                            input/button의 type 속성 (text, password, submit, button)
-                        </div>
-                        <input type="text" class="input-field" id="typeValue" placeholder="submit">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Name</label>
-                        <div class="help-text">
-                            폼 엘리먼트의 name 속성
-                        </div>
-                        <input type="text" class="input-field" id="nameValue" placeholder="username">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Text</label>
-                        <div class="help-text">
-                            엘리먼트가 포함하는 텍스트 (버튼 텍스트, 링크 텍스트 등)
-                        </div>
-                        <input type="text" class="input-field" id="textValue" placeholder="로그인">
-                    </div>
+            <div class="input-group">
+              <label class="input-label">Selection Method <span class="required">*</span></label>
+              <div class="help-text">
+                카탈론이 엘리먼트를 찾을 때 우선 사용할 방법
+              </div>
+              <div class="radio-group">
+                <div class="radio-option">
+                  <input type="radio" id="xpathRadio" name="selectorMethod" value="XPATH" checked>
+                  <label for="xpathRadio">XPath</label>
                 </div>
-
-                <!-- Smart Locator -->
-                <div class="input-section">
-                    <div class="section-title">Smart Locator</div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">Smart Locator</label>
-                        <div class="help-text">
-                            카탈론의 지능형 locator (텍스트나 역할 기반)
-                        </div>
-                        <input type="text" class="input-field" id="smartLocator" placeholder='internal:role=button[name="로그인"i]'>
-                        <div class="example-box">
-                            예시: internal:text="회원가입"s, internal:role=button[name="로그인"i]
-                        </div>
-                    </div>
+                <div class="radio-option">
+                  <input type="radio" id="cssRadio" name="selectorMethod" value="CSS">
+                  <label for="cssRadio">CSS</label>
                 </div>
-
-                <!-- 기타 속성들 -->
-                <div class="input-section">
-                    <div class="section-title">기타 속성들</div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">추가 속성 (JSON)</label>
-                        <div class="help-text">
-                            추가 속성들을 JSON 형태로 입력
-                        </div>
-                        <textarea class="input-field textarea-field" id="otherAttributes" placeholder='{"placeholder": "아이디를 입력하세요", "maxlength": "50"}'></textarea>
-                    </div>
+                <div class="radio-option">
+                  <input type="radio" id="basicRadio" name="selectorMethod" value="BASIC">
+                  <label for="basicRadio">BASIC</label>
                 </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="generateObjectFile()">Object Repository 파일 생성</button>
-                    <button class="btn btn-secondary" onclick="clearAll()">전체 초기화</button>
-                </div>
+              </div>
             </div>
+          </div>
+
+          <!-- Selector 정보 -->
+          <div class="input-section">
+            <div class="section-title">Selector 정보</div>
+
+            <div class="input-group">
+              <label class="input-label">XPath <span class="required">*</span></label>
+              <div class="help-text">
+                개발자도구(F12) → Elements → 우클릭 → Copy → Copy full XPath
+              </div>
+              <input type="text" class="input-field" id="xpathInput" placeholder="//button[@id='login']">
+              <div class="example-box">
+                예시: //html/body/main/div/div[2]/form/div/div[2]/button
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">CSS Selector</label>
+              <div class="help-text">
+                개발자도구(F12) → Elements → 우클릭 → Copy → Copy selector
+              </div>
+              <input type="text" class="input-field" id="cssSelector" placeholder="#login">
+              <div class="example-box">
+                예시: button.MuiButton-root.MuiButton-text
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">BASIC Selector</label>
+              <div class="help-text">
+                카스텀 기본 selector (복합 조건 등)
+              </div>
+              <input type="text" class="input-field" id="basicSelector"
+                placeholder="//button[contains(@class, 'login')]">
+            </div>
+          </div>
+
+          <!-- XPath 변형들 -->
+          <div class="input-section">
+            <div class="section-title">XPath 변형들</div>
+
+            <div class="input-group">
+              <label class="input-label">XPath Attributes</label>
+              <div class="help-text">
+                속성 기반 XPath (type, id, class 등)
+              </div>
+              <input type="text" class="input-field" id="xpathAttributes" placeholder="//button[@type='submit']">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">XPath Position</label>
+              <div class="help-text">
+                위치 기반 XPath (상대적 위치)
+              </div>
+              <input type="text" class="input-field" id="xpathPosition" placeholder="//div[2]/button">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">XPath Neighbor AI 분석</label>
+              <div class="help-text">
+                입력한 XPath를 카탈론 방식의 안정적인 XPath Neighbor로 변환
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" class="input-field" id="pageUrl" placeholder="페이지 URL (선택사항)" style="flex: 2;">
+                <select id="aiModelSelectSpy" class="input-field" style="flex: 1;">
+                  <option value="gemma-3-27b-it">Gemma-3-27b-it</option>
+                  <option value="gemini-2.0-flash">Gemini-2.0-flash</option>
+                </select>
+                <button type="button" id="analyzeBtn" class="btn btn-primary" onclick="analyzeXPathWithAI()">AI
+                  분석</button>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">XPath Neighbor</label>
+              <div class="help-text">
+                주변 엘리먼트 기반 XPath
+              </div>
+              <div id="xpathNeighborContainer">
+                <div class="xpath-neighbor-item">
+                  <input type="text" class="input-field xpath-neighbor-input" id="xpathNeighbor"
+                    placeholder="(.//*[normalize-space(text())='텍스트'])[1]/following::*[name()='svg'][1]">
+                  <button type="button" class="add-neighbor-btn" onclick="addXpathNeighbor()">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">XPath Custom</label>
+              <div class="help-text">
+                복합 조건 XPath (text, class 조합)
+              </div>
+              <input type="text" class="input-field" id="xpathCustom"
+                placeholder="//button[text()='로그인' and @class='btn-primary']">
+            </div>
+          </div>
         </div>
+
+        <!-- 우측 패널: 엘리먼트 속성 + Smart Locator -->
+        <div class="spy-right-panel">
+          <div class="panel-header">엘리먼트 속성 & Locator</div>
+
+          <!-- 엘리먼트 속성들 -->
+          <div class="input-section">
+            <div class="section-title">엘리먼트 속성들</div>
+
+            <div class="input-group">
+              <label class="input-label">Tag Name</label>
+              <div class="help-text">
+                HTML 태그 이름 (button, input, div, a, span)
+              </div>
+              <input type="text" class="input-field" id="tagName" placeholder="button">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Class</label>
+              <div class="help-text">
+                엘리먼트의 class 속성 전체 값 (개발자도구에서 복사)
+              </div>
+              <input type="text" class="input-field" id="className" placeholder="MuiButton-root MuiButton-contained">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">ID</label>
+              <div class="help-text">
+                엘리먼트의 id 속성 값
+              </div>
+              <input type="text" class="input-field" id="idValue" placeholder="login-button">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Type</label>
+              <div class="help-text">
+                input/button의 type 속성 (text, password, submit, button)
+              </div>
+              <input type="text" class="input-field" id="typeValue" placeholder="submit">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Name</label>
+              <div class="help-text">
+                폼 엘리먼트의 name 속성
+              </div>
+              <input type="text" class="input-field" id="nameValue" placeholder="username">
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Text</label>
+              <div class="help-text">
+                엘리먼트가 포함하는 텍스트 (버튼 텍스트, 링크 텍스트 등)
+              </div>
+              <input type="text" class="input-field" id="textValue" placeholder="로그인">
+            </div>
+          </div>
+
+          <!-- Smart Locator -->
+          <div class="input-section">
+            <div class="section-title">Smart Locator</div>
+
+            <div class="input-group">
+              <label class="input-label">Smart Locator</label>
+              <div class="help-text">
+                카탈론의 지능형 locator (텍스트나 역할 기반)
+              </div>
+              <input type="text" class="input-field" id="smartLocator" placeholder='internal:role=button[name="로그인"i]'>
+              <div class="example-box">
+                예시: internal:text="회원가입"s, internal:role=button[name="로그인"i]
+              </div>
+            </div>
+          </div>
+
+          <!-- 기타 속성들 -->
+          <div class="input-section">
+            <div class="section-title">기타 속성들</div>
+
+            <div class="input-group">
+              <label class="input-label">추가 속성 (JSON)</label>
+              <div class="help-text">
+                추가 속성들을 JSON 형태로 입력
+              </div>
+              <textarea class="input-field textarea-field" id="otherAttributes"
+                placeholder='{"placeholder": "아이디를 입력하세요", "maxlength": "50"}'></textarea>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-primary" onclick="generateObjectFile()">Object Repository 파일 생성</button>
+            <button class="btn btn-secondary" onclick="clearAll()">전체 초기화</button>
+          </div>
+        </div>
+      </div>
     </div>
 
   </main>
 
   <!-- 수파베이스 설정 -->
   <script>
-    const { createClient } = supabase;
-    const testClient = createClient(
-      'https://sposmjzjicgpxmpbzomn.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwb3NtanpqaWNncHhtcGJ6b21uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3OTYxNzIsImV4cCI6MjA2NjM3MjE3Mn0.UjTxOh7tVc6F_kw_5rCOlntnWfrljzhp0ntmeKLuW3c'
-    );
+                const { createClient } = supabase;
+            const testClient = createClient(
+              'https://sposmjzjicgpxmpbzomn.supabase.co',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwb3NtanpqaWNncHhtcGJ6b21uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3OTYxNzIsImV4cCI6MjA2NjM3MjE3Mn0.UjTxOh7tVc6F_kw_5rCOlntnWfrljzhp0ntmeKLuW3c'
+            );
 
     window.getSupabaseClient = () => testClient;
     window.isSupabaseConnected = () => true;
@@ -645,26 +670,26 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
     console.log('수파베이스 함수 등록 완료');
   </script>
 
-<!-- 기존 라이브러리들 -->
-<script src="libs/common_utils_zip.js"></script>
-<script src="libs/csv_parser_zip.js"></script>
-<script src="libs/groovy_converter_zip.js"></script>
-<script src="libs/report_viewer_zip.js"></script>
-<script src="libs/script.js"></script>
-<script src="libs/gemini-keywords.js"></script>
+  <!-- 기존 라이브러리들 -->
+  <script src="libs/common_utils_zip.js"></script>
+  <script src="libs/csv_parser_zip.js"></script>
+  <script src="libs/groovy_converter_zip.js"></script>
+  <script src="libs/report_viewer_zip.js"></script>
+  <script src="libs/script.js"></script>
+  <script src="libs/gemini-keywords.js"></script>
 
-<!-- 테스트케이스 매핑 모듈들 -->
-<script src="libs/testcase_mapping/testcase_parser.js"></script>
-<script src="libs/testcase_mapping/katalon_mapper.js"></script>
-<script src="libs/testcase_mapping/testcase_ui_controller.js"></script>
-<script src="libs/testcase_mapping/testcase_mapper_supabase.js"></script>
+  <!-- 테스트케이스 매핑 모듈들 -->
+  <script src="libs/testcase_mapping/testcase_parser.js"></script>
+  <script src="libs/testcase_mapping/katalon_mapper.js"></script>
+  <script src="libs/testcase_mapping/testcase_ui_controller.js"></script>
+  <script src="libs/testcase_mapping/testcase_mapper_supabase.js"></script>
 
-<!-- 통합 프롬프트 파일 -->
-<script src="libs/prompts/gemma_master_prompt.js"></script>
+  <!-- 통합 프롬프트 파일 -->
+  <script src="libs/prompts/gemma_master_prompt.js"></script>
 
-<!-- AI 엔진들 -->
-<script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
-<script src="libs/ai_engine_gemini-2.0-flash.js"></script>
+  <!-- AI 엔진들 -->
+  <script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
+  <script src="libs/ai_engine_gemini-2.0-flash.js"></script>
 
   <!-- 애플리케이션 메인 스크립트들 -->
   <script src="assets/js/ui-utils.js"></script>
