@@ -177,7 +177,7 @@ class GemmaEngine {
            // Supabase에서 예제 로딩 후 랜덤 3개 선택
            const allExamples = await this.loadExamplesFromSupabase();
            const shuffled = allExamples.sort(() => 0.5 - Math.random());
-           const examples = shuffled.slice(0, 3).map(example => ({
+           const examples = shuffled.slice(0, 5).map(example => ({
                description: example.description || '예제',
                script: example.script ? example.script.substring(0, 500) + '...' : ''
            }));
