@@ -461,6 +461,16 @@ class GemmaEngine {
        }
    }
 
+   getFallbackResponse() {
+       return {
+           testPurpose: "기본 분석",
+           environmentSetup: ["브라우저 설정 필요"],
+           preconditionAnalysis: ["기본 전제조건 확인"],
+           mainActions: ["기본 액션"],
+           validationLogic: ["기본 검증"]
+       };
+   }
+
   parseTestCaseFromText(text) {
       const result = {
           summary: '',
