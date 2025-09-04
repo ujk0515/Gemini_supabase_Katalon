@@ -1,15 +1,16 @@
 /**
-* Gemini-2.0-flash 전용 AI 엔진 (Gemma-3-27b-it 로직 기반)
-* libs/ai_engine_gemini-2.0-flash.js
+* Gemini-2.5-flash 전용 AI 엔진 (최신 모델 지원)
+* libs/ai_engine_gemini-2.5-flash.js
 */
 
-class GeminiFlashEngine {
+class Gemini25FlashEngine {
    constructor() {
        this.analysisResults = {};
        this.currentStep = 0;
        this.lastEvaluation = null;
        this.promptCache = {};
        this.cacheTimestamp = null;
+       this.modelName = 'gemini-2.5-flash';
    }
 
    
@@ -34,12 +35,12 @@ class GeminiFlashEngine {
                    step5: window.MASTER_PROMPTS.step5
                };
                this.cacheTimestamp = Date.now();
-               console.log('프롬프트 캐시 갱신 완료');
+               console.log('Gemini 2.5 Flash: 프롬프트 캐시 갱신 완료');
            } else {
                throw new Error('MASTER_PROMPTS가 로드되지 않았습니다.');
            }
        } catch (error) {
-           console.error('프롬프트 로딩 실패:', error);
+           console.error('Gemini 2.5 Flash 프롬프트 로딩 실패:', error);
            throw new Error('프롬프트 파일을 읽을 수 없습니다.');
        }
    }
@@ -53,23 +54,24 @@ class GeminiFlashEngine {
            }
            
            if (!client) {
-               console.warn('Supabase 클라이언트가 없습니다. 예제 없이 진행합니다.');
+               console.warn('Gemini 2.5 Flash: Supabase 클라이언트가 없습니다. 예제 없이 진행합니다.');
                return [];
            }
 
            const { data, error } = await client
                .from('katalon_good_examples')
                .select('*')
-               .order('created_at', { ascending: false });
+               .order('created_at', { ascending: false }); // 모든 예제 가져오기
 
            if (error) {
-               console.error('Supabase 예제 로딩 실패:', error);
+               console.error('Gemini 2.5 Flash Supabase 예제 로딩 실패:', error);
                return [];
            }
 
+           console.log(`Gemini 2.5 Flash: ${data?.length || 0}개의 고품질 예제 로딩 완료`);
            return data || [];
        } catch (error) {
-           console.error('예제 로딩 중 오류:', error);
+           console.error('Gemini 2.5 Flash 예제 로딩 중 오류:', error);
            return [];
        }
    }
@@ -113,15 +115,47 @@ class GeminiFlashEngine {
 
            return processedPrompt;
        } catch (error) {
-           console.error('프롬프트 템플릿 처리 실패:', error);
+           console.error('Gemini 2.5 Flash 프롬프트 템플릿 처리 실패:', error);
            return prompt;
        }
+   }
+
+   parseTestcase(text) {
+       const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+       const result = { summary: '', precondition: [], steps: [], expectedResult: '' };
+
+       let currentSection = null;
+
+       for (const line of lines) {
+           if (line.toLowerCase().includes('summary')) {
+               currentSection = 'summary';
+               const colonIndex = line.indexOf(':');
+               if (colonIndex !== -1) result.summary = line.substring(colonIndex + 1).trim();
+           } else if (line.toLowerCase().includes('precondition')) {
+               currentSection = 'precondition';
+           } else if (line.toLowerCase().includes('steps')) {
+               currentSection = 'steps';
+           } else if (line.toLowerCase().includes('expected result')) {
+               currentSection = 'expectedResult';
+               const colonIndex = line.indexOf(':');
+               if (colonIndex !== -1) result.expectedResult = line.substring(colonIndex + 1).trim();
+           } else if (currentSection === 'precondition' && line) {
+               result.precondition.push(line);
+           } else if (currentSection === 'steps' && line) {
+               result.steps.push(line);
+           } else if (currentSection === 'expectedResult' && line) {
+               if (result.expectedResult) result.expectedResult += ' ' + line;
+               else result.expectedResult = line;
+           }
+       }
+
+       return result;
    }
 
    async startAnalysis(testcaseText) {
        try {
            this.showProgress();
-           this.updateProgress(0, 'Gemini 2.0 Flash 5단계 스마트 분석 시작...');
+           this.updateProgress(0, 'Gemini 2.5 Flash 5단계 최신 AI 분석 시작...');
 
            const parsedTC = this.parseTestcase(testcaseText);
 
@@ -136,40 +170,46 @@ class GeminiFlashEngine {
            return step5;
 
        } catch (error) {
-           console.error('Gemini 2.0 Flash 5단계 스마트 분석 실패:', error);
+           console.error('Gemini 2.5 Flash 5단계 최신 AI 분석 실패:', error);
            this.updateProgress(-1, `분석 실패: ${error.message}`);
            throw error;
        }
    }
 
    async analyzeSituationAndEnvironment(parsedTC) {
-       this.updateProgress(1, '상황 파악 및 환경 설정 분석 중...');
+       this.updateProgress(1, '고급 상황 파악 및 환경 설정 분석 중...');
 
        let prompt = await this.getPromptStep(1);
+       
+       // Gemini 2.5에 최적화된 프롬프트 확장
+       prompt += `\n\n참고: Gemini 2.5 Flash 모델을 사용하여 더 정확하고 상세한 분석을 수행합니다.`;
        
        prompt = this.processPromptTemplate(prompt, { parsedTC });
 
        const result = await this.callGemini(prompt);
        this.analysisResults.step1 = result;
-       this.updateProgress(1, `상황 분석 완료: ${result.testPurpose || '분석 완료'}`);
+       this.updateProgress(1, `고급 상황 분석 완료: ${result.testPurpose || '분석 완료'}`);
        return result;
    }
 
    async mapActionsAndValidation(parsedTC, step1Result) {
-       this.updateProgress(2, '액션 매핑 및 검증 로직 설계 중...');
+       this.updateProgress(2, '지능형 액션 매핑 및 검증 로직 설계 중...');
 
        let prompt = await this.getPromptStep(2);
+       
+       // 2.5-flash 특화 프롬프트
+       prompt += `\n\n추가 지침: Gemini 2.5 Flash의 향상된 추론 능력을 활용하여 더 정교한 액션 매핑을 수행해주세요.`;
        
        prompt = this.processPromptTemplate(prompt, { parsedTC, step1Result });
 
        const result = await this.callGemini(prompt);
        this.analysisResults.step2 = result;
-       this.updateProgress(2, `액션 매핑 완료: ${result.mainActions?.length || 0}개 액션, ${result.validationLogic?.length || 0}개 검증`);
+       this.updateProgress(2, `지능형 액션 매핑 완료: ${result.mainActions?.length || 0}개 액션, ${result.validationLogic?.length || 0}개 검증`);
        return result;
    }
 
    async createScriptPlan(parsedTC, step1Result, step2Result) {
-       this.updateProgress(3, '설계도 작성 및 예제 로딩 중...');
+       this.updateProgress(3, 'Gemini 2.5 Flash 설계도 작성 및 예제 로딩 중...');
 
        try {
            // Supabase에서 예제 로딩 후 랜덤 3개 선택
@@ -179,9 +219,12 @@ class GeminiFlashEngine {
                description: example.description || '예제',
                script: example.script ? example.script.substring(0, 500) + '...' : ''
            }));
-           console.log(`총 예제 개수: ${allExamples.length}, 랜덤 선택된 예제: ${examples.length}`);
+           console.log(`Gemini 2.5 Flash - 총 예제 개수: ${allExamples.length}, 랜덤 선택된 예제: ${examples.length}`);
 
            let prompt = await this.getPromptStep(3);
+
+           // 2.5-flash 특화 지침 추가
+           prompt += `\n\n최신 모델 활용: Gemini 2.5 Flash의 개선된 코드 생성 능력을 활용하여 더욱 안정적이고 효율적인 스크립트 설계도를 작성해주세요.`;
 
            // 예제를 포함한 설계도 작성
            prompt = this.processPromptTemplate(prompt, {
@@ -211,9 +254,9 @@ class GeminiFlashEngine {
                    result = rawResult;
                }
            } catch (error) {
-               console.warn('step3 JSON 파싱 실패, 기본값 사용:', error);
+               console.warn('Gemini 2.5 Flash step3 JSON 파싱 실패, 기본값 사용:', error);
                result = {
-                   scriptName: "기본_테스트",
+                   scriptName: "Gemini25_고급_테스트",
                    overallStructure: "try-finally",
                    plan: [],
                    finalization: { instruction: "WebUI.closeBrowser()", reason: "브라우저 종료" }
@@ -222,14 +265,14 @@ class GeminiFlashEngine {
            
            // 예제를 result에 추가하여 step5에서 사용
            result.examples = examples;
-           this.updateProgress(3, '1차 설계도 작성 완료!');
+           this.updateProgress(3, 'Gemini 2.5 Flash 1차 설계도 작성 완료!');
            return result;
 
        } catch (error) {
-           console.error('설계도 작성 실패:', error);
+           console.error('Gemini 2.5 Flash 설계도 작성 실패:', error);
            this.updateProgress(3, '설계도 작성 실패');
            return {
-               scriptName: "기본_테스트",
+               scriptName: "Gemini25_고급_테스트",
                overallStructure: "try-finally",
                plan: [],
                finalization: { instruction: "WebUI.closeBrowser()", reason: "브라우저 종료" }
@@ -238,10 +281,13 @@ class GeminiFlashEngine {
    }
 
    async generateFirstScript(plan) {
-       this.updateProgress(4, '1차 스크립트 생성 중...');
+       this.updateProgress(4, 'Gemini 2.5 Flash 1차 스크립트 생성 중...');
 
        try {
            let prompt = await this.getPromptStep(4);
+
+           // 2.5-flash 특화 지침
+           prompt += `\n\n고급 생성 지침: Gemini 2.5 Flash의 최신 코드 생성 기술을 활용하여 더욱 최적화되고 유지보수가 용이한 Katalon 스크립트를 생성해주세요.`;
 
            prompt = this.processPromptTemplate(prompt, { plan });
 
@@ -256,16 +302,19 @@ class GeminiFlashEngine {
                    .trim();
            }
 
-           this.updateProgress(4, '1차 스크립트 생성 완료!');
+           this.updateProgress(4, 'Gemini 2.5 Flash 1차 스크립트 생성 완료!');
            return cleanedResult;
 
        } catch (error) {
-           console.error('1차 스크립트 생성 실패:', error);
+           console.error('Gemini 2.5 Flash 1차 스크립트 생성 실패:', error);
            this.updateProgress(4, '1차 스크립트 생성 실패');
-           return `try {
+           return `// Gemini 2.5 Flash 1차 생성 스크립트 (폴백)
+try {
    // 기본 스크립트
    WebUI.navigateToUrl(GlobalVariable.BASE_URL)
    WebUI.waitForPageLoad(10)
+   
+   // TODO: 상세 구현 필요
    
 } finally {
    WebUI.closeBrowser()
@@ -274,10 +323,13 @@ class GeminiFlashEngine {
    }
 
    async generateFinalScript(firstCode, examples) {
-       this.updateProgress(5, '예시 비교 및 최종 스크립트 개선 중...');
+       this.updateProgress(5, 'Gemini 2.5 Flash 예시 비교 및 최종 스크립트 개선 중...');
 
        try {
            let prompt = await this.getPromptStep(5);
+
+           // Gemini 2.5 Flash 특화 개선 지침
+           prompt += `\n\n최신 AI 개선 지침: Gemini 2.5 Flash의 향상된 코드 최적화 능력을 활용하여 예제와의 비교를 통해 더욱 완성도 높은 최종 스크립트를 생성해주세요.`;
 
            prompt = this.processPromptTemplate(prompt, { firstCode, examples });
 
@@ -292,11 +344,11 @@ class GeminiFlashEngine {
                    .trim();
            }
 
-           this.updateProgress(5, '최종 스크립트 완성!');
+           this.updateProgress(5, 'Gemini 2.5 Flash 최종 스크립트 완성!');
            return cleanedResult;
 
        } catch (error) {
-           console.error('최종 스크립트 생성 실패:', error);
+           console.error('Gemini 2.5 Flash 최종 스크립트 생성 실패:', error);
            this.updateProgress(5, '최종 스크립트 생성 실패 - 1차 스크립트 반환');
            return firstCode;
        }
@@ -304,32 +356,35 @@ class GeminiFlashEngine {
 
 
    async evaluateScriptQuality(script) {
-       const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.
+       const prompt = `당신은 Gemini 2.5 Flash입니다. 다음 Katalon Groovy 스크립트를 최신 AI 기준으로 전문가 수준에서 100점 만점으로 평가해주세요.
 
 === 평가 대상 스크립트 ===
 ${script}
 
-=== 평가 기준 ===
-1. 코드 품질 (30점)
-2. 실행 가능성 (25점)
-3. 효율성 (20점)
-4. 가독성 (15점)
-5. 표준 준수 (10점)
+=== 평가 기준 (Gemini 2.5 Flash 고급 평가) ===
+1. 코드 품질 및 구조 (30점)
+2. 실행 가능성 및 안정성 (25점)
+3. 성능 및 효율성 (20점)
+4. 가독성 및 유지보수성 (15점)
+5. Katalon 표준 및 베스트 프랙티스 준수 (10점)
+
+Gemini 2.5 Flash의 향상된 분석 능력을 활용하여 더욱 정교한 평가를 수행해주세요.
 
 다음 JSON 형식으로만 반환하세요:
 {
  "score": 85,
- "grade": "양호",
+ "grade": "우수",
  "issues": ["구체적인 문제점1", "구체적인 문제점2"],
  "strengths": ["잘된 부분1", "잘된 부분2"],
- "recommendation": "개선 권장사항"
+ "recommendation": "개선 권장사항",
+ "advanced_notes": "Gemini 2.5 Flash 추가 분석 의견"
 }`;
 
        try {
-           console.log('AI 스크립트 품질 평가 시작...');
+           console.log('Gemini 2.5 Flash AI 스크립트 품질 평가 시작...');
 
            const result = await this.callGemini(prompt);
-           console.log('AI 평가 완료:', result);
+           console.log('Gemini 2.5 Flash AI 평가 완료:', result);
 
            if (typeof result === 'string') {
                try {
@@ -348,7 +403,7 @@ ${script}
                        return evaluation;
                    }
                } catch (parseError) {
-                   console.warn('AI 평가 JSON 파싱 실패:', parseError);
+                   console.warn('Gemini 2.5 Flash AI 평가 JSON 파싱 실패:', parseError);
                }
            } else if (typeof result === 'object') {
                this.lastEvaluation = result;
@@ -356,24 +411,26 @@ ${script}
            }
 
            const fallbackEvaluation = {
-               score: 75,
-               grade: "보통",
+               score: 78,
+               grade: "양호",
                issues: ["AI 평가 파싱 실패"],
-               strengths: ["기본 구조 양호"],
-               recommendation: "수동 검토 필요"
+               strengths: ["Gemini 2.5 구조 양호"],
+               recommendation: "수동 검토 필요",
+               advanced_notes: "Gemini 2.5 Flash 평가 시스템 이슈"
            };
            this.lastEvaluation = fallbackEvaluation;
            return fallbackEvaluation;
 
        } catch (error) {
-           console.error('AI 평가 실패:', error);
+           console.error('Gemini 2.5 Flash AI 평가 실패:', error);
 
            const errorEvaluation = {
-               score: 70,
+               score: 75,
                grade: "평가불가",
-               issues: ["AI 평가 시스템 오류"],
+               issues: ["Gemini 2.5 Flash AI 평가 시스템 오류"],
                strengths: ["코드 생성 완료"],
-               recommendation: "네트워크 연결 확인 후 재시도"
+               recommendation: "네트워크 연결 확인 후 재시도",
+               advanced_notes: "최신 모델 평가 기능 일시 중단"
            };
            this.lastEvaluation = errorEvaluation;
            return errorEvaluation;
@@ -394,13 +451,13 @@ ${script}
        const improveButton = document.querySelector('.improve-script-btn');
        if (improveButton) {
            improveButton.disabled = true;
-           improveButton.innerHTML = '<span class="smart-loading"></span>개선 중...';
+           improveButton.innerHTML = '<span class="smart-loading"></span>Gemini 2.5로 개선 중...';
        }
 
        this.showImprovementLoading();
 
        try {
-           console.log('스크립트 개선 프로세스 시작');
+           console.log('Gemini 2.5 Flash 스크립트 개선 프로세스 시작');
            
            const improvedScript = await this.improveScriptBasedOnEvaluation(
                window.smartGeneratedScript, 
@@ -410,7 +467,7 @@ ${script}
            document.getElementById('smartGeneratedScript').textContent = improvedScript;
            window.smartGeneratedScript = improvedScript;
            
-           console.log('개선된 스크립트로 재평가 시작');
+           console.log('Gemini 2.5 Flash 개선된 스크립트로 재평가 시작');
            
            const newEvaluation = await this.evaluateScriptQuality(improvedScript);
            
@@ -418,25 +475,26 @@ ${script}
            
            this.lastEvaluation = newEvaluation;
            
-           console.log('스크립트 개선 및 재평가 완료');
+           console.log('Gemini 2.5 Flash 스크립트 개선 및 재평가 완료');
            
        } catch (error) {
-           console.error('스크립트 개선 실패:', error);
+           console.error('Gemini 2.5 Flash 스크립트 개선 실패:', error);
            alert('스크립트 개선 중 오류가 발생했습니다: ' + error.message);
            this.showImprovementError();
            
        } finally {
            if (improveButton) {
                improveButton.disabled = false;
-               improveButton.innerHTML = 'AI 검토 반영';
+               improveButton.innerHTML = '🤖 AI 검토 반영';
            }
        }
    }
 
    async improveScriptBasedOnEvaluation(originalScript, evaluation) {
-       console.log('AI 검토 반영 시작...');
+       console.log('Gemini 2.5 Flash AI 검토 반영 시작...');
        
-       const prompt = `다음은 이미 생성된 Katalon Groovy 스크립트입니다. 이 스크립트를 거의 그대로 유지하면서, 아래 지적된 문제점들을 분석하여 실제 개선이 필요한 부분만 최소한으로 수정해주세요.
+       const prompt = `당신은 최신 Gemini 2.5 Flash 모델입니다. 다음은 이미 생성된 Katalon Groovy 스크립트입니다. 
+이 스크립트를 거의 그대로 유지하면서, 아래 지적된 문제점들을 Gemini 2.5의 향상된 분석 능력으로 정밀하게 분석하여 실제 개선이 필요한 부분만 최소한으로 수정해주세요.
 
 === 원본 스크립트 ===
 ${originalScript}
@@ -444,9 +502,13 @@ ${originalScript}
 === 검토된 문제점들 ===
 ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') : '특별한 문제점 없음'}
 
-완전한 Groovy 스크립트만 반환하세요. 설명이나 JSON 래핑 없이 순수 코드로만 응답해야 합니다.
+=== 추가 분석 의견 ===
+${evaluation.advanced_notes || '추가 의견 없음'}
 
-현재 점수 ${evaluation.score}점에서 85점 이상이 목표입니다.`;
+Gemini 2.5 Flash의 최신 코드 최적화 기술을 활용하여 완전한 Groovy 스크립트만 반환하세요. 
+설명이나 JSON 래핑 없이 순수 코드로만 응답해야 합니다.
+
+목표: 현재 점수 ${evaluation.score}점에서 90점 이상으로 향상`;
 
        try {
            const result = await this.callGemini(prompt);
@@ -459,10 +521,10 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
                    .trim();
            }
            
-           console.log('스크립트 개선 완료');
+           console.log('Gemini 2.5 Flash 스크립트 개선 완료');
            return improvedScript;
        } catch (error) {
-           console.error('스크립트 개선 실패:', error);
+           console.error('Gemini 2.5 Flash 스크립트 개선 실패:', error);
            throw error;
        }
    }
@@ -500,30 +562,30 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
    }
 
    async callGemini(prompt) {
-       await new Promise(resolve => setTimeout(resolve, 1000));
+       await new Promise(resolve => setTimeout(resolve, 800)); // 2.5-flash는 더 빠름
 
-       const selectedModel = document.getElementById('aiModelSelect').value;
        const supabase = window.getSupabaseClient();
 
        if (!supabase) {
            throw new Error("Supabase client not initialized");
        }
 
+       // 모델명을 2.5-flash로 고정
        const { data, error } = await supabase.functions.invoke('abcd', {
            body: {
-               model: selectedModel,
+               model: 'gemini-2.5-flash',
                contents: [{ parts: [{ text: prompt }] }]
            }
        });
 
        if (error) {
-           console.error('Supabase function error:', error);
+           console.error('Gemini 2.5 Flash Supabase function error:', error);
            throw new Error(`Function Error: ${error.message}`);
        }
 
        const resultText = data.candidates[0].content.parts[0].text;
 
-       console.log('Gemini 원본 응답:', resultText);
+       console.log('Gemini 2.5 Flash 원본 응답:', resultText);
 
        if (this.currentStep === 3 || this.currentStep === 4 || this.currentStep === 5) {
            return resultText;
@@ -544,7 +606,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
                        return JSON.parse(jsonText);
                    }
                } catch (e3) {
-                   console.error('JSON 파싱 실패:', e3);
+                   console.error('Gemini 2.5 Flash JSON 파싱 실패:', e3);
                    return this.getFallbackResponse();
                }
            }
@@ -553,8 +615,8 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
 
    getFallbackResponse() {
        return {
-           testPurpose: "테스트 목적 파악 실패",
-           testScope: "fallback_test",
+           testPurpose: "Gemini 2.5 테스트 목적 파악 실패",
+           testScope: "gemini25_fallback_test",
            environmentSetup: [
                {
                    action: "WebUI.navigateToUrl",
@@ -565,7 +627,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
            ],
            preconditionAnalysis: [
                {
-                   originalCondition: "분석 실패",
+                   originalCondition: "Gemini 2.5 분석 실패",
                    actionType: "manual_check",
                    katalonAction: "WebUI.comment",
                    objectPath: "Manual verification required",
@@ -585,7 +647,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
 
        const stepMapping = {
            1: [1, 2],
-           2: [3, 4], 
+           2: [3, 4],
            3: [5, 6],
            4: [7, 8],
            5: [9, 10]  // 신규 Step 5
@@ -638,7 +700,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
 
        value.textContent = '...';
        circle.className = 'score-circle-large score-waiting';
-       details.textContent = 'AI가 평가 중...\n잠시만 기다려주세요';
+       details.textContent = 'Gemini 2.5 Flash가 평가 중...\n잠시만 기다려주세요';
 
        try {
            const evaluation = await this.evaluateScriptQuality(script);
@@ -657,7 +719,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
            value.textContent = evaluation.score;
            circle.className = `score-circle-large ${className}`;
 
-           let detailText = `등급: ${evaluation.grade}`;
+           let detailText = `등급: ${evaluation.grade} (Gemini 2.5 Flash 평가)`;
 
            if (evaluation.strengths && evaluation.strengths.length > 0) {
                detailText += `\n\n잘된 부분:\n• ${evaluation.strengths.join('\n• ')}`;
@@ -671,16 +733,20 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
                detailText += `\n\n권장사항:\n${evaluation.recommendation}`;
            }
 
+           if (evaluation.advanced_notes) {
+               detailText += `\n\n고급 분석:\n${evaluation.advanced_notes}`;
+           }
+
            details.textContent = detailText;
 
-           console.log(`AI 평가 결과: ${evaluation.score}점 (${evaluation.grade})`);
+           console.log(`Gemini 2.5 Flash AI 평가 결과: ${evaluation.score}점 (${evaluation.grade})`);
 
        } catch (error) {
-           console.error('점수 표시 실패:', error);
+           console.error('Gemini 2.5 Flash 점수 표시 실패:', error);
 
            value.textContent = '?';
            circle.className = 'score-circle-large score-poor';
-           details.textContent = '평가 실패\n네트워크를 확인하고\n다시 시도해주세요';
+           details.textContent = 'Gemini 2.5 Flash 평가 실패\n네트워크를 확인하고\n다시 시도해주세요';
        }
    }
 
@@ -717,7 +783,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
                `${scoreDiff}점 하락` : 
                '점수 동일';
 
-       let detailText = `등급: ${newEvaluation.grade} (${oldEvaluation.score}점 → ${newEvaluation.score}점)\n${improvementText}`;
+       let detailText = `등급: ${newEvaluation.grade} (${oldEvaluation.score}점 → ${newEvaluation.score}점)\n${improvementText} [Gemini 2.5 Flash]`;
 
        if (newEvaluation.strengths && newEvaluation.strengths.length > 0) {
            detailText += `\n\n잘된 부분:\n• ${newEvaluation.strengths.join('\n• ')}`;
@@ -731,9 +797,13 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
            detailText += `\n\n추가 권장사항:\n${newEvaluation.recommendation}`;
        }
 
+       if (newEvaluation.advanced_notes) {
+           detailText += `\n\n고급 분석:\n${newEvaluation.advanced_notes}`;
+       }
+
        details.textContent = detailText;
 
-       console.log(`재평가 결과: ${oldEvaluation.score}점 → ${newEvaluation.score}점 (${improvementText})`);
+       console.log(`Gemini 2.5 Flash 재평가 결과: ${oldEvaluation.score}점 → ${newEvaluation.score}점 (${improvementText})`);
    }
 
    showImprovementLoading() {
@@ -744,7 +814,7 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
        if (circle && value && details) {
            value.textContent = '...';
            circle.className = 'score-circle-large score-waiting';
-           details.textContent = 'AI가 스크립트를 개선하고\n재평가하는 중입니다...\n잠시만 기다려주세요';
+           details.textContent = 'Gemini 2.5 Flash가 스크립트를\n개선하고 재평가하는 중입니다...\n잠시만 기다려주세요';
        }
    }
 
@@ -756,28 +826,31 @@ ${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') 
        if (circle && value && details) {
            value.textContent = 'X';
            circle.className = 'score-circle-large score-poor';
-           details.textContent = '스크립트 개선 실패\n네트워크를 확인하고\n다시 시도해주세요';
+           details.textContent = 'Gemini 2.5 Flash\n스크립트 개선 실패\n네트워크를 확인하고\n다시 시도해주세요';
        }
    }
 }
 
+// DOM 로드 완료 시 인스턴스 생성
 document.addEventListener('DOMContentLoaded', function() {
     try {
-        window.geminiFlashEngine = new GeminiFlashEngine();
-        console.log('geminiFlashEngine 인스턴스 생성 완료:', window.geminiFlashEngine);
+        window.gemini25FlashEngine = new Gemini25FlashEngine();
+        console.log('✅ Gemini 2.5 Flash Engine 인스턴스 생성 완료:', window.gemini25FlashEngine);
     } catch (error) {
-        console.error('geminiFlashEngine 생성 실패:', error);
+        console.error('❌ Gemini 2.5 Flash Engine 생성 실패:', error);
     }
 });
 
+// 즉시 실행으로도 생성 시도
 try {
-    window.geminiFlashEngine = new GeminiFlashEngine();
-    console.log('geminiFlashEngine 즉시 생성 완료:', window.geminiFlashEngine);
+    window.gemini25FlashEngine = new Gemini25FlashEngine();
+    console.log('✅ Gemini 2.5 Flash Engine 즉시 생성 완료:', window.gemini25FlashEngine);
 } catch (error) {
-    console.error('geminiFlashEngine 즉시 생성 실패:', error);
+    console.error('❌ Gemini 2.5 Flash Engine 즉시 생성 실패:', error);
 }
 
-async function startSmartMappingGemini() {
+// 외부에서 사용할 수 있는 함수들
+async function startSmartMappingGemini25() {
     const input = document.getElementById('smartTestcaseInput').value.trim();
     if (!input) {
         alert('테스트케이스를 입력해주세요.');
@@ -786,22 +859,22 @@ async function startSmartMappingGemini() {
 
     const button = document.querySelector('.smart-generate-btn');
     button.disabled = true;
-    button.innerHTML = '<span class="smart-loading"></span>분석 중...';
+    button.innerHTML = '<span class="smart-loading"></span>Gemini 2.5로 분석 중...';
 
     try {
-        await window.geminiFlashEngine.startAnalysis(input);
+        await window.gemini25FlashEngine.startAnalysis(input);
     } catch (error) {
-        alert('분석 실패: ' + error.message);
+        alert(`Gemini 2.5 Flash 분석 실패: ${error.message}`);
     } finally {
         button.disabled = false;
-        button.innerHTML = '스마트 분석 시작';
+        button.innerHTML = '🧠 스마트 분석 시작';
     }
 }
 
 function copySmartScript() {
     if (window.smartGeneratedScript) {
         navigator.clipboard.writeText(window.smartGeneratedScript).then(() => {
-            alert('스크립트가 클립보드에 복사되었습니다');
+            alert('Gemini 2.5 Flash 생성 스크립트가 클립보드에 복사되었습니다');
         });
     }
 }
@@ -812,18 +885,22 @@ function downloadSmartScript() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'smart_katalon_script.groovy';
+        a.download = 'gemini25_smart_katalon_script.groovy';
         a.click();
         URL.revokeObjectURL(url);
     }
 }
 
-function improveSmartScriptGemini() {
-    if (window.geminiFlashEngine) {
-        window.geminiFlashEngine.improveAndReEvaluateScript();
+function improveSmartScriptGemini25() {
+    if (window.gemini25FlashEngine) {
+        window.gemini25FlashEngine.improveAndReEvaluateScript();
     } else {
-        alert('AI 엔진을 찾을 수 없습니다.');
+        alert('Gemini 2.5 Flash AI 엔진을 찾을 수 없습니다.');
     }
 }
 
-console.log('AI 엔진 gemini-2.0-flash 버전 로드 완료 (Gemma 로직 기반)');
+// 전역 함수 등록
+window.startSmartMappingGemini25 = startSmartMappingGemini25;
+window.improveSmartScriptGemini25 = improveSmartScriptGemini25;
+
+console.log('🚀 AI 엔진 Gemini-2.5-flash 버전 로드 완료 (최신 모델 지원)');

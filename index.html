@@ -336,17 +336,14 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           <p>Gemini AI가 인간처럼 생각하여 테스트케이스를 분석하고 최적의 Katalon 스크립트를 생성합니다</p>
         </div>
 
-        <!-- 8단계 진행바로 수정 -->
+        <!-- 4단계 진행바 (한줄 표시) -->
         <div id="smartProgress" class="smart-progress-container" style="display: none;">
-          <div class="progress-steps">
-            <div class="step" id="step1">1. Summary 이해</div>
-            <div class="step" id="step2">2. TC 조건 파악</div>
-            <div class="step" id="step3">3. 환경 구성 검증</div>
-            <div class="step" id="step4">4. 스텝 동작 매핑</div>
-            <div class="step" id="step5">5. 설계도 작성</div>
-            <div class="step" id="step6">6. 코드 생성</div>
-            <div class="step" id="step7">7. 조건 충돌 검증</div>
-            <div class="step" id="step8">8. 결과 수렴 검증</div>
+          <div class="progress-steps" style="display: flex; gap: 20px; justify-content: center; flex-wrap: nowrap; margin-bottom: 20px;">
+            <div class="step" id="step1">1. 상황 분석</div>
+            <div class="step" id="step2">2. 액션 매핑</div>
+            <div class="step" id="step3">3. 설계도 작성</div>
+            <div class="step" id="step4">4. 1차 생성</div>
+            <div class="step" id="step5">5. 최종 개선</div>
           </div>
           <div class="progress-details" id="progressDetails"></div>
         </div>
@@ -365,6 +362,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
                 <select id="aiModelSelect" class="ai-model-dropdown">
                   <option value="gemma-3-27b-it">Gemma-3-27b-it</option>
                   <option value="gemini-2.0-flash">Gemini-2.0-flash</option>
+                  <option value="gemini-2.5-flash">Gemini-2.5-flash</option>
                 </select>
               </div>
               <textarea id="smartTestcaseInput" class="smart-input-box" placeholder="..."></textarea>
@@ -511,6 +509,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
                 <select id="aiModelSelectSpy" class="input-field" style="flex: 1;">
                   <option value="gemma-3-27b-it">Gemma-3-27b-it</option>
                   <option value="gemini-2.0-flash">Gemini-2.0-flash</option>
+                  <option value="gemini-2.5-flash">Gemini-2.5-flash</option>
                 </select>
                 <button type="button" id="analyzeBtn" class="btn btn-primary" onclick="analyzeXPathWithAI()">AI
                   분석</button>
@@ -690,6 +689,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
   <!-- AI 엔진들 -->
   <script src="libs/ai_engine_Gemma-3-27b-it.js"></script>
   <script src="libs/ai_engine_gemini-2.0-flash.js"></script>
+  <script src="libs/ai_engine_gemini-2.5-flash.js"></script>
 
   <!-- 애플리케이션 메인 스크립트들 -->
   <script src="assets/js/ui-utils.js"></script>
@@ -828,6 +828,18 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           window.geminiFlashEngine = new GeminiFlashEngine();
         }
         await startSmartMappingGemini();
+
+      } else if (selectedModel === 'gemini-2.5-flash') {
+        if (typeof Gemini25FlashEngine === 'undefined') {
+          alert('AI 엔진이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+          return;
+        }
+
+        if (!window.gemini25FlashEngine) {
+          console.log('Gemini 2.5 Flash 엔진 생성 중...');
+          window.gemini25FlashEngine = new Gemini25FlashEngine();
+        }
+        await startSmartMappingGemini25();
       }
     }
 
@@ -845,6 +857,12 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           window.geminiFlashEngine.improveAndReEvaluateScript();
         } else {
           alert('Gemini Flash AI 엔진을 찾을 수 없습니다.');
+        }
+      } else if (selectedModel === 'gemini-2.5-flash') {
+        if (window.gemini25FlashEngine) {
+          window.gemini25FlashEngine.improveAndReEvaluateScript();
+        } else {
+          alert('Gemini 2.5 Flash AI 엔진을 찾을 수 없습니다.');
         }
       } else {
         alert('지원되지 않는 AI 모델입니다.');
@@ -874,7 +892,7 @@ Expected Result: 로그인 성공 후 메인 페이지로 이동"></textarea>
           progressContainer.style.display = 'none';
         }
 
-        for (let i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 4; i++) {
           const step = document.getElementById(`step${i}`);
           if (step) {
             step.className = 'step';

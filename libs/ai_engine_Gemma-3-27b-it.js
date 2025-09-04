@@ -14,15 +14,6 @@ class GemmaEngine {
 
    
 
-   async getPromptStep(stepNumber) {
-       const now = Date.now();
-       if (!this.cacheTimestamp || (now - this.cacheTimestamp) > 30000) {
-           await this.refreshPromptCache();
-       }
-       
-       return this.promptCache[`step${stepNumber}`] || '';
-   }
-
    async refreshPromptCache() {
        try {
            if (window.MASTER_PROMPTS) {
@@ -30,7 +21,8 @@ class GemmaEngine {
                    step1: window.MASTER_PROMPTS.step1,
                    step2: window.MASTER_PROMPTS.step2,
                    step3: window.MASTER_PROMPTS.step3,
-                   step4: window.MASTER_PROMPTS.step4
+                   step4: window.MASTER_PROMPTS.step4,
+                   step5: window.MASTER_PROMPTS.step5
                };
                this.cacheTimestamp = Date.now();
                console.log('프롬프트 캐시 갱신 완료');
@@ -43,12 +35,19 @@ class GemmaEngine {
        }
    }
 
+   async getPromptStep(stepNumber) {
+       const now = Date.now();
+       if (!this.cacheTimestamp || (now - this.cacheTimestamp) > 30000) {
+           await this.refreshPromptCache();
+       }
+       
+       return this.promptCache[`step${stepNumber}`] || '';
+   }
+
    async loadExamplesFromSupabase() {
        try {
-           // testClient 직접 접근 시도
            let client = window.testClient;
            
-           // testClient가 없으면 getSupabaseClient 함수 시도
            if (!client && window.getSupabaseClient) {
                client = window.getSupabaseClient();
            }
@@ -79,32 +78,37 @@ class GemmaEngine {
        try {
            let processedPrompt = prompt;
 
+           // {{}} 방식 템플릿 처리 (더 안전함)
            if (variables.parsedTC) {
-               processedPrompt = processedPrompt.replace(/\$\{parsedTC\.summary\}/g, variables.parsedTC.summary || '');
-               processedPrompt = processedPrompt.replace(/\$\{JSON\.stringify\(parsedTC\.precondition\)\}/g, JSON.stringify(variables.parsedTC.precondition || []));
-               processedPrompt = processedPrompt.replace(/\$\{JSON\.stringify\(parsedTC\.steps\)\}/g, JSON.stringify(variables.parsedTC.steps || []));
-               processedPrompt = processedPrompt.replace(/\$\{parsedTC\.expectedResult\}/g, variables.parsedTC.expectedResult || '');
+               processedPrompt = processedPrompt.replace(/{{parsedTC.summary}}/g, variables.parsedTC.summary || '');
+               processedPrompt = processedPrompt.replace(/{{parsedTC.precondition}}/g, JSON.stringify(variables.parsedTC.precondition || [], null, 2));
+               processedPrompt = processedPrompt.replace(/{{parsedTC.steps}}/g, JSON.stringify(variables.parsedTC.steps || [], null, 2));
+               processedPrompt = processedPrompt.replace(/{{parsedTC.expectedResult}}/g, variables.parsedTC.expectedResult || '');
            }
 
            if (variables.step1Result) {
-               processedPrompt = processedPrompt.replace(/\$\{JSON\.stringify\(step1Result\.environmentSetup\)\}/g, JSON.stringify(variables.step1Result.environmentSetup || []));
-               processedPrompt = processedPrompt.replace(/\$\{JSON\.stringify\(step1Result\.preconditionAnalysis\)\}/g, JSON.stringify(variables.step1Result.preconditionAnalysis || []));
-               processedPrompt = processedPrompt.replace(/\$\{JSON\.stringify\(step1Result, null, 2\)\}/g, JSON.stringify(variables.step1Result, null, 2));
+               processedPrompt = processedPrompt.replace(/{{step1Result.environmentSetup}}/g, JSON.stringify(variables.step1Result.environmentSetup || [], null, 2));
+               processedPrompt = processedPrompt.replace(/{{step1Result.preconditionAnalysis}}/g, JSON.stringify(variables.step1Result.preconditionAnalysis || [], null, 2));
+               processedPrompt = processedPrompt.replace(/{{step1Result}}/g, JSON.stringify(variables.step1Result, null, 2));
            }
 
            if (variables.step2Result) {
-               processedPrompt = processedPrompt.replace(/\$\{JSON\.stringify\(step2Result, null, 2\)\}/g, JSON.stringify(variables.step2Result, null, 2));
+               processedPrompt = processedPrompt.replace(/{{step2Result}}/g, JSON.stringify(variables.step2Result, null, 2));
            }
 
            if (variables.examples) {
                const examplesText = variables.examples.length > 0 ? 
                    variables.examples.map(e => `// 예제: ${e.description}\n${e.script}`).join('\n\n') : 
                    '// 참고할 예제 없음';
-               processedPrompt = processedPrompt.replace(/\$\{examples\.length > 0 \? examples\.map\(e => \"\/\/ 예제: \" \+ e\.description \+ \"\\n\" \+ e\.script\)\.join\(\"\\\\n\\\\n\"\) : \"\/\/ 참고할 예제 없음\"\}/g, examplesText);
+               processedPrompt = processedPrompt.replace(/{{examples}}/g, examplesText);
            }
 
            if (variables.plan) {
-               processedPrompt = processedPrompt.replace(/\$\{JSON\.stringify\(plan, null, 2\)\}/g, JSON.stringify(variables.plan, null, 2));
+               processedPrompt = processedPrompt.replace(/{{plan}}/g, JSON.stringify(variables.plan, null, 2));
+           }
+
+           if (variables.firstCode) {
+               processedPrompt = processedPrompt.replace(/{{firstCode}}/g, variables.firstCode);
            }
 
            return processedPrompt;
@@ -117,20 +121,22 @@ class GemmaEngine {
    async startAnalysis(testcaseText) {
        try {
            this.showProgress();
-           this.updateProgress(0, '분석 시작...');
+           this.updateProgress(0, '5단계 스마트 분석 시작...');
 
-           const parsedTC = this.parseTestcase(testcaseText);
+           const parsedTC = this.parseTestCaseFromText(testcaseText);
 
+           // Step 1-5: 기본 스크립트 생성 후 예시 비교 개선
            const step1 = await this.analyzeSituationAndEnvironment(parsedTC);
            const step2 = await this.mapActionsAndValidation(parsedTC, step1);
            const step3 = await this.createScriptPlan(parsedTC, step1, step2);
-           const step4 = await this.generateFinalScript(step3);
+           const step4 = await this.generateFirstScript(step3);
+           const step5 = await this.generateFinalScript(step4, step3.examples);
 
-           this.showResult(step4);
-           return step4;
+           this.showResult(step5);
+           return step5;
 
        } catch (error) {
-           console.error('스마트 분석 실패:', error);
+           console.error('5단계 스마트 분석 실패:', error);
            this.updateProgress(-1, `분석 실패: ${error.message}`);
            throw error;
        }
@@ -165,14 +171,21 @@ class GemmaEngine {
    }
 
    async createScriptPlan(parsedTC, step1Result, step2Result) {
-       this.updateProgress(3, '스크립트 설계도 작성 중...');
+       this.updateProgress(3, '설계도 작성 및 예제 로딩 중...');
 
        try {
-           const examples = await this.loadExamplesFromSupabase();
-           console.log(`Supabase에서 ${examples.length}개 예제 로딩 완료`);
+           // Supabase에서 예제 로딩 후 랜덤 3개 선택
+           const allExamples = await this.loadExamplesFromSupabase();
+           const shuffled = allExamples.sort(() => 0.5 - Math.random());
+           const examples = shuffled.slice(0, 3).map(example => ({
+               description: example.description || '예제',
+               script: example.script ? example.script.substring(0, 500) + '...' : ''
+           }));
+           console.log(`총 예제 개수: ${allExamples.length}, 랜덤 선택된 예제: ${examples.length}`);
 
            let prompt = await this.getPromptStep(3);
 
+           // 예제를 포함한 설계도 작성
            prompt = this.processPromptTemplate(prompt, {
                parsedTC,
                step1Result,
@@ -180,9 +193,38 @@ class GemmaEngine {
                examples
            });
 
-           const result = await this.callGemini(prompt);
-           this.analysisResults.step3 = result;
-           this.updateProgress(3, '설계도 작성 완료!');
+           const rawResult = await this.callGemini(prompt);
+           this.analysisResults.step3 = rawResult;
+           
+           // step3는 문자열로 반환되므로 JSON 파싱 시도
+           let result;
+           try {
+               if (typeof rawResult === 'string') {
+                   const cleanedText = rawResult.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+                   const jsonStart = cleanedText.indexOf('{');
+                   const jsonEnd = cleanedText.lastIndexOf('}');
+                   if (jsonStart !== -1 && jsonEnd !== -1) {
+                       const jsonText = cleanedText.substring(jsonStart, jsonEnd + 1);
+                       result = JSON.parse(jsonText);
+                   } else {
+                       throw new Error('JSON 구조를 찾을 수 없음');
+                   }
+               } else {
+                   result = rawResult;
+               }
+           } catch (error) {
+               console.warn('step3 JSON 파싱 실패, 기본값 사용:', error);
+               result = {
+                   scriptName: "기본_테스트",
+                   overallStructure: "try-finally",
+                   plan: [],
+                   finalization: { instruction: "WebUI.closeBrowser()", reason: "브라우저 종료" }
+               };
+           }
+           
+           // 예제를 result에 추가하여 step5에서 사용
+           result.examples = examples;
+           this.updateProgress(3, '1차 설계도 작성 완료!');
            return result;
 
        } catch (error) {
@@ -198,8 +240,8 @@ class GemmaEngine {
        }
    }
 
-   async generateFinalScript(plan) {
-       this.updateProgress(4, '최종 스크립트 생성 중...');
+   async generateFirstScript(plan) {
+       this.updateProgress(4, '1차 스크립트 생성 중...');
 
        try {
            let prompt = await this.getPromptStep(4);
@@ -217,26 +259,49 @@ class GemmaEngine {
                    .trim();
            }
 
-           this.updateProgress(4, '최종 스크립트 생성 완료!');
+           this.updateProgress(4, '1차 스크립트 생성 완료!');
            return cleanedResult;
 
        } catch (error) {
-           console.error('스크립트 생성 실패:', error);
-           this.updateProgress(4, '스크립트 생성 실패');
+           console.error('1차 스크립트 생성 실패:', error);
+           this.updateProgress(4, '1차 스크립트 생성 실패');
            // 기본 스크립트 반환
-           return `try {
-   // 기본 스크립트
-   WebUI.navigateToUrl(GlobalVariable.BASE_URL)
-   WebUI.waitForPageLoad(10)
-   
-} finally {
-   WebUI.closeBrowser()
-}`;
+           return `try {\n   // 기본 스크립트\n   WebUI.navigateToUrl(GlobalVariable.BASE_URL)\n   WebUI.waitForPageLoad(10)\n   \n} finally {\n   WebUI.closeBrowser()\n}`;
        }
    }
 
+   async generateFinalScript(firstCode, examples) {
+       this.updateProgress(5, '예시 비교 및 최종 스크립트 개선 중...');
+
+       try {
+           let prompt = await this.getPromptStep(5);
+
+           prompt = this.processPromptTemplate(prompt, { firstCode, examples });
+
+           const result = await this.callGemini(prompt);
+           this.analysisResults.step5 = result;
+
+           let cleanedResult = result;
+           if (typeof result === 'string') {
+               cleanedResult = result
+                   .replace(/^```groovy\s*/g, '')
+                   .replace(/```\s*$/g, '')
+                   .trim();
+           }
+
+           this.updateProgress(5, '최종 스크립트 완성!');
+           return cleanedResult;
+
+       } catch (error) {
+           console.error('최종 스크립트 생성 실패:', error);
+           this.updateProgress(5, '최종 스크립트 생성 실패 - 1차 스크립트 반환');
+           return firstCode;
+       }
+   }
+
+
    async evaluateScriptQuality(script) {
-       const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.\n\n=== 평가 대상 스크립트 ===\n${script}\n\n=== 평가 기준 ===\n1. 코드 품질 (30점)\n2. 실행 가능성 (25점)\n3. 효율성 (20점)\n4. 가독성 (15점)\n5. 표준 준수 (10점)\n\n다음 JSON 형식으로만 반환하세요:\n{\n "score": 85,\n "grade": "양호",\n "issues": ["구체적인 문제점1", "구체적인 문제점2"],\n "strengths": ["잘된 부분1", "잘된 부분2"],\n "recommendation": "개선 권장사항"\n}`;
+       const prompt = `다음 Katalon Groovy 스크립트를 전문가 수준에서 100점 만점으로 평가해주세요.\n\n=== 평가 대상 스크립트 ===\n${script}\n\n=== 평가 기준 ===\n1. 코드 품질 (30점)\n2. 실행 가능성 (25점)\n3. 효율성 (20점)\n4. 가독성 (15점)\n5. 표준 준수 (10점)\n\n다음 JSON 형식으로만 반환하세요:\n{\n \"score\": 85,\n \"grade\": \"양호\",\n \"issues\": [\"구체적인 문제점1\", \"구체적인 문제점2\"],\n \"strengths\": [\"잘된 부분1\", \"잘된 부분2\"],\n \"recommendation\": \"개선 권장사항\"\n}`;
 
        try {
            console.log('AI 스크립트 품질 평가 시작...');
@@ -276,206 +341,164 @@ class GemmaEngine {
                recommendation: "수동 검토 필요"
            };
            this.lastEvaluation = fallbackEvaluation;
-           return fallbackEvaluation;
+          return fallbackEvaluation;
+      } catch (error) {
+          console.error('AI 평가 오류:', error);
+          const fallbackEvaluation = {
+              score: 60,
+              grade: "불확실",
+              issues: ["AI 평가 시스템 오류"],
+              strengths: [],
+              recommendation: "수동 점검 필요"
+          };
+          this.lastEvaluation = fallbackEvaluation;
+          return fallbackEvaluation;
+      }
+  }
 
-       } catch (error) {
-           console.error('AI 평가 실패:', error);
-
-           const errorEvaluation = {
-               score: 70,
-               grade: "평가불가",
-               issues: ["AI 평가 시스템 오류"],
-               strengths: ["코드 생성 완료"],
-               recommendation: "네트워크 연결 확인 후 재시도"
-           };
-           this.lastEvaluation = errorEvaluation;
-           return errorEvaluation;
-       }
-   }
-
-   async improveAndReEvaluateScript() {
-       if (!window.smartGeneratedScript) {
-           alert('개선할 스크립트가 없습니다.');
-           return;
-       }
-
-       if (!this.lastEvaluation) {
-           alert('먼저 스크립트 품질 평가가 완료되어야 합니다.');
-           return;
-       }
-
-       const improveButton = document.querySelector('.improve-script-btn');
-       if (improveButton) {
-           improveButton.disabled = true;
-           improveButton.innerHTML = '<span class="smart-loading"></span>개선 중...';
-       }
-
-       this.showImprovementLoading();
-
-       try {
-           console.log('스크립트 개선 프로세스 시작');
-           
-           const improvedScript = await this.improveScriptBasedOnEvaluation(
-               window.smartGeneratedScript, 
-               this.lastEvaluation
-           );
-           
-           document.getElementById('smartGeneratedScript').textContent = improvedScript;
-           window.smartGeneratedScript = improvedScript;
-           
-           console.log('개선된 스크립트로 재평가 시작');
-           
-           const newEvaluation = await this.evaluateScriptQuality(improvedScript);
-           
-           await this.displayScriptScoreWithComparison(improvedScript, this.lastEvaluation, newEvaluation);
-           
-           this.lastEvaluation = newEvaluation;
-           
-           console.log('스크립트 개선 및 재평가 완료');
-           
-       } catch (error) {
-           console.error('스크립트 개선 실패:', error);
-           alert('스크립트 개선 중 오류가 발생했습니다: ' + error.message);
-           this.showImprovementError();
-           
-       } finally {
-           if (improveButton) {
-               improveButton.disabled = false;
-               improveButton.innerHTML = 'AI 검토 반영';
-           }
-       }
-   }
-
-   async improveScriptBasedOnEvaluation(originalScript, evaluation) {
-       console.log('AI 검토 반영 시작...');
-       
-       const prompt = `다음은 이미 생성된 Katalon Groovy 스크립트입니다. 이 스크립트를 거의 그대로 유지하면서, 아래 지적된 문제점들을 분석하여 실제 개선이 필요한 부분만 최소한으로 수정해주세요.\n\n=== 원본 스크립트 ===\n${originalScript}\n\n=== 검토된 문제점들 ===\n${evaluation.issues ? evaluation.issues.map(issue => `• ${issue}`).join('\n') : '특별한 문제점 없음'}\n\n완전한 Groovy 스크립트만 반환하세요. 설명이나 JSON 래핑 없이 순수 코드로만 응답해야 합니다.\n\n현재 점수 ${evaluation.score}점에서 85점 이상이 목표입니다.`;
-
-       try {
-           const result = await this.callGemini(prompt);
-           
-           let improvedScript = result;
-           if (typeof result === 'string') {
-               improvedScript = result
-                   .replace(/^```groovy\s*/g, '')
-                   .replace(/```\s*$/g, '')
-                   .trim();
-           }
-           
-           console.log('스크립트 개선 완료');
-           return improvedScript;
-       } catch (error) {
-           console.error('스크립트 개선 실패:', error);
-           throw error;
-       }
-   }
-
-   parseTestcase(text) {
-       const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-       const result = { summary: '', precondition: [], steps: [], expectedResult: '' };
-
-       let currentSection = null;
-
-       for (const line of lines) {
-           if (line.toLowerCase().includes('summary')) {
-               currentSection = 'summary';
-               const colonIndex = line.indexOf(':');
-               if (colonIndex !== -1) result.summary = line.substring(colonIndex + 1).trim();
-           } else if (line.toLowerCase().includes('precondition')) {
-               currentSection = 'precondition';
-           } else if (line.toLowerCase().includes('steps')) {
-               currentSection = 'steps';
-           } else if (line.toLowerCase().includes('expected result')) {
-               currentSection = 'expectedResult';
-               const colonIndex = line.indexOf(':');
-               if (colonIndex !== -1) result.expectedResult = line.substring(colonIndex + 1).trim();
-           } else if (currentSection === 'precondition' && line) {
-               result.precondition.push(line);
-           } else if (currentSection === 'steps' && line) {
-               result.steps.push(line);
-           } else if (currentSection === 'expectedResult' && line) {
-               if (result.expectedResult) result.expectedResult += ' ' + line;
-               else result.expectedResult = line;
-           }
-       }
-
-       return result;
-   }
-
-   async callGemini(prompt) {
+  async callGemini(prompt) {
+       // Small delay to avoid rapid-fire calls
        await new Promise(resolve => setTimeout(resolve, 1000));
 
-       const selectedModel = document.getElementById('aiModelSelect').value;
-       const supabase = window.getSupabaseClient();
+       const MAX_PROMPT_CHARS = 8000; // heuristic limit to avoid token issues
+
+       const shrinkPrompt = (p) => {
+           let s = p;
+           // remove long code blocks and excessive whitespace
+           s = s.replace(/```[\s\S]*?```/g, '');
+           // remove very long JSON blocks by collapsing inner content
+           s = s.replace(/\{[\s\S]{1000,}\}/g, '{...}');
+           // remove multiple consecutive newlines/spaces
+           s = s.replace(/\s{2,}/g, ' ');
+           // trim
+           s = s.trim();
+           if (s.length > MAX_PROMPT_CHARS) s = s.substring(0, MAX_PROMPT_CHARS - 200);
+           return s;
+       };
+
+       const modelEl = document.getElementById && document.getElementById('aiModelSelect');
+       const selectedModel = modelEl && modelEl.value ? modelEl.value : 'gemma-3-27b-it';
+       const supabase = (window.getSupabaseClient && window.getSupabaseClient()) || window.testClient || null;
 
        if (!supabase) {
            throw new Error("Supabase client not initialized");
        }
 
-       const { data, error } = await supabase.functions.invoke('abcd', {
-           body: {
-               model: selectedModel,
-               contents: [{ parts: [{ text: prompt }] }]
+       // If prompt is very long, prepare a shrunk version and try that on failure
+       let attemptPrompt = prompt;
+       let usedShrunk = false;
+       if (attemptPrompt.length > MAX_PROMPT_CHARS) {
+           attemptPrompt = shrinkPrompt(attemptPrompt);
+           usedShrunk = true;
+           console.warn('Prompt length exceeded heuristic limit — sending shrunk prompt');
+       }
+
+       const invokeOnce = async (p) => {
+           const { data, error } = await supabase.functions.invoke('abcd', {
+               body: {
+                   model: selectedModel,
+                   contents: [{ parts: [{ text: p }] }]
+               }
+           });
+
+           if (error) {
+               console.error('Supabase function error:', error);
+               throw new Error(`Function Error: ${error.message}`);
            }
-       });
 
-       if (error) {
-           console.error('Supabase function error:', error);
-           throw new Error(`Function Error: ${error.message}`);
-       }
+           if (!data || !data.candidates || !data.candidates[0]) {
+               throw new Error('잘못된 함수 응답 형식');
+           }
 
-       const resultText = data.candidates[0].content.parts[0].text;
-
-       console.log('Gemini 원본 응답:', resultText);
-
-       if (this.currentStep === 3 || this.currentStep === 4) {
-           return resultText;
-       }
+           return data.candidates[0].content.parts[0].text;
+       };
 
        try {
-           return JSON.parse(resultText);
-       } catch (e1) {
+           const resultText = await invokeOnce(attemptPrompt);
+           console.log('Gemini 원본 응답:', resultText);
+
+           if (this.currentStep === 3 || this.currentStep === 4 || this.currentStep === 5) {
+               return resultText;
+           }
+
            try {
-               const cleanedText = resultText.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
-               return JSON.parse(cleanedText);
-           } catch (e2) {
+               return JSON.parse(resultText);
+           } catch (e1) {
                try {
-                   const jsonStart = resultText.indexOf('{');
-                   const jsonEnd = resultText.lastIndexOf('}');
-                   if (jsonStart !== -1 && jsonEnd !== -1) {
-                       const jsonText = resultText.substring(jsonStart, jsonEnd + 1);
-                       return JSON.parse(jsonText);
+                   const cleanedText = resultText.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+                   return JSON.parse(cleanedText);
+               } catch (e2) {
+                   try {
+                       const jsonStart = resultText.indexOf('{');
+                       const jsonEnd = resultText.lastIndexOf('}');
+                       if (jsonStart !== -1 && jsonEnd !== -1) {
+                           const jsonText = resultText.substring(jsonStart, jsonEnd + 1);
+                           return JSON.parse(jsonText);
+                       }
+                   } catch (e3) {
+                       console.error('JSON 파싱 실패:', e3);
+                       return this.getFallbackResponse();
                    }
-               } catch (e3) {
-                   console.error('JSON 파싱 실패:', e3);
+               }
+           }
+
+       } catch (err) {
+           console.warn('첫 요청 실패:', err.message);
+           // If we haven't tried shrinking the original prompt, do so and retry once
+           if (!usedShrunk) {
+               const short = shrinkPrompt(prompt);
+               try {
+                   const retryText = await invokeOnce(short);
+                   if (this.currentStep === 3 || this.currentStep === 4 || this.currentStep === 5) return retryText;
+                   try { return JSON.parse(retryText); } catch { return retryText; }
+               } catch (err2) {
+                   console.error('재시도 실패:', err2);
                    return this.getFallbackResponse();
                }
            }
+
+           return this.getFallbackResponse();
        }
    }
 
-   getFallbackResponse() {
-       return {
-           testPurpose: "테스트 목적 파악 실패",
-           testScope: "fallback_test",
-           environmentSetup: [
-               {
-                   action: "WebUI.navigateToUrl",
-                   target: "GlobalVariable.BASE_URL",
-                   purpose: "기본 페이지 접속",
-                   required: true
-               }
-           ],
-           preconditionAnalysis: [
-               {
-                   originalCondition: "분석 실패",
-                   actionType: "manual_check",
-                   katalonAction: "WebUI.comment",
-                   objectPath: "Manual verification required",
-                   technicalNeed: "수동 확인 필요"
-               }
-           ]
-       };
+  parseTestCaseFromText(text) {
+      const result = {
+          summary: '',
+          precondition: [],
+          steps: [],
+          expectedResult: ''
+      };
+
+      const lines = text.split('\n');
+      let currentSection = '';
+
+      for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+
+          if (trimmedLine.toLowerCase().includes('summary')) {
+              currentSection = 'summary';
+              const colonIndex = trimmedLine.indexOf(':');
+              if (colonIndex !== -1) result.summary = trimmedLine.substring(colonIndex + 1).trim();
+          } else if (trimmedLine.toLowerCase().includes('precondition')) {
+              currentSection = 'precondition';
+          } else if (trimmedLine.toLowerCase().includes('steps')) {
+              currentSection = 'steps';
+          } else if (trimmedLine.toLowerCase().includes('expected result')) {
+              currentSection = 'expectedResult';
+              const colonIndex = trimmedLine.indexOf(':');
+              if (colonIndex !== -1) result.expectedResult = trimmedLine.substring(colonIndex + 1).trim();
+          } else if (currentSection === 'precondition' && trimmedLine) {
+              result.precondition.push(trimmedLine);
+          } else if (currentSection === 'steps' && trimmedLine) {
+              result.steps.push(trimmedLine);
+          } else if (currentSection === 'expectedResult' && trimmedLine) {
+              if (result.expectedResult) result.expectedResult += ' ' + trimmedLine;
+              else result.expectedResult = trimmedLine;
+          }
+      }
+
+      return result;
    }
 
    showProgress() {
@@ -486,21 +509,13 @@ class GemmaEngine {
    updateProgress(step, message) {
        this.currentStep = step;
 
-       const stepMapping = {
-           1: [1, 2],
-           2: [3, 4],
-           3: [5, 6],
-           4: [7, 8]
-       };
-
-       const mappedSteps = stepMapping[step] || [];
-
-       for (let i = 1; i <= 8; i++) {
+       // 5단계 진행바에 맞게 수정
+       for (let i = 1; i <= 5; i++) {
            const stepElement = document.getElementById(`step${i}`);
            if (stepElement) {
-               if (mappedSteps.includes(i)) {
+               if (i === step) {
                    stepElement.className = 'step active';
-               } else if (i < Math.min(...mappedSteps)) {
+               } else if (i < step) {
                    stepElement.className = 'step completed';
                } else {
                    stepElement.className = 'step';
@@ -558,31 +573,17 @@ class GemmaEngine {
 
            value.textContent = evaluation.score;
            circle.className = `score-circle-large ${className}`;
+           details.innerHTML = `\n               <div class="score-grade">${evaluation.grade}</div>\n               <div class="score-breakdown">
+                   <strong>장점:</strong> ${evaluation.strengths.join(', ')}<br>
+                   <strong>문제:</strong> ${evaluation.issues.join(', ')}<br>
+                   <strong>개선:</strong> ${evaluation.recommendation}\n               </div>\n           `;
 
-           let detailText = `등급: ${evaluation.grade}`;
-
-           if (evaluation.strengths && evaluation.strengths.length > 0) {
-               detailText += `\n\n잘된 부분:\n• ${evaluation.strengths.join('\n• ')}`;
-           }
-
-           if (evaluation.issues && evaluation.issues.length > 0) {
-               detailText += `\n\n개선사항:\n• ${evaluation.issues.join('\n• ')}`;
-           }
-
-           if (evaluation.recommendation) {
-               detailText += `\n\n권장사항:\n${evaluation.recommendation}`;
-           }
-
-           details.textContent = detailText;
-
-           console.log(`AI 평가 결과: ${evaluation.score}점 (${evaluation.grade})`);
-
+           this.lastEvaluation = evaluation;
        } catch (error) {
-           console.error('점수 표시 실패:', error);
-
+           console.error('스크립트 평가 실패:', error);
            value.textContent = '?';
-           circle.className = 'score-circle-large score-poor';
-           details.textContent = '평가 실패\n네트워크를 확인하고\n다시 시도해주세요';
+           circle.className = 'score-circle-large score-waiting';
+           details.textContent = '평가 실패\n다시 시도해 주세요';
        }
    }
 

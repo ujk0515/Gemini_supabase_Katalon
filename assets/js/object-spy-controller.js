@@ -327,6 +327,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 aiResponse = await window.geminiFlashEngine.callGemini(prompt);
                 
+            } else if (selectedModel === 'gemini-2.5-flash') {
+                // Gemini 2.5 Flash 엔진 사용
+                if (typeof Gemini25FlashEngine === 'undefined') {
+                    throw new Error('Gemini 2.5 Flash AI 엔진이 로드되지 않았습니다.');
+                }
+                
+                if (!window.gemini25FlashEngine) {
+                    window.gemini25FlashEngine = new Gemini25FlashEngine();
+                }
+                
+                aiResponse = await window.gemini25FlashEngine.callGemini(prompt);
+                
             } else {
                 throw new Error('지원하지 않는 AI 모델입니다.');
             }
